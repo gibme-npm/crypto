@@ -1,0 +1,6 @@
+[submodule "emsdk"]
+	path = emsdk
+	url = https://github.com/emscripten-core/emsdk.git
+[submodule "external/crypto"]
+	path = external/crypto
+	url = https://github.com/gibme-c/crypto.git

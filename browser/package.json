@@ -1,0 +1,53 @@
+{
+  "name": "@gibme/crypto-browser",
+  "version": "7.0.2",
+  "description": "Web Browser Lazy-Loading Advanced Cryptographic Functions provided by @gibme/crypto",
+  "main": "dist/browser/src/index.js",
+  "types": "dist/browser/src/index.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "yarn build:typescript",
+    "build:typescript": "./node_modules/.bin/tsc",
+    "build:webpack": "./node_modules/.bin/auto-pack",
+    "test": "yarn test:typecheck",
+    "test:typecheck": "./node_modules/.bin/tsc --noEmit",
+    "prepublishOnly": "yarn build && yarn build:webpack",
+    "prepare": "node scripts/build_version.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gibme-npm/crypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gibme-npm/crypto/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "engineStrict": true,
+  "author": {
+    "name": "Brandon Lehmann",
+    "email": "brandonlehmann@gmail.com"
+  },
+  "webpack": {
+    "entry": {
+      "Crypto": "./src/index.ts"
+    },
+    "filename": "[name].min.js",
+    "exclude": {
+      "globalJQuery": true
+    },
+    "enablePlugins": {
+      "polyfills": true
+    }
+  },
+  "devDependencies": {
+    "@gibme/auto-pack": "^0.4.3",
+    "@types/node": "^22.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
