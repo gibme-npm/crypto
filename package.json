@@ -1,0 +1,93 @@
+{
+  "name": "@gibme/crypto",
+  "version": "7.0.2",
+  "description": "Advanced Cryptographic Functions",
+  "license": "BSD-3-Clause",
+  "main": "dist/src/index.ts",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run ts:build",
+    "all:build": "npm run node:build && npm run js:build && npm run ts:build",
+    "docs:build": "typedoc",
+    "js:build": "run-script-os",
+    "js:build:win32": "build_js.sh",
+    "js:build:default": "./build_js.sh",
+    "node:build": "cross-env BUILD_NODE=1 cmake-js compile",
+    "node:build:debug": "cross-env DEBUG_PRINT=1 BUILD_NODE=1 cmake-js compile",
+    "node:clean": "cmake-js clean",
+    "node:rebuild": "npm run node:clean && npm run node:build",
+    "node:rebuild:debug": "npm run node:clean && npm run node:build:debug",
+    "js:build:conditional": "test -f .gitsource && npm run js:build || echo \"SKIP JS BUILD: NOT GIT SOURCE\"",
+    "ts:build": "tsc",
+    "prebuild": "cross-env BUILD_NODE=1 prebuild --backend cmake-js",
+    "prebuild:node": "cross-env BUILD_NODE=1 prebuild --backend cmake-js -t 18.0.0 -t 20.0.0 -t 22.0.0",
+    "prebuild:all": "cross-env BUILD_NODE=1 prebuild --backend cmake-js --all",
+    "prebuild:install": "prebuild-install --download --verbose || npm run node:build",
+    "test": "npm run test:style && npm run test:typecheck && npm run test:mocha",
+    "test:typecheck": "tsc --noEmit",
+    "test:style": "npm run style",
+    "test:mocha": "ts-node ./test/test.ts",
+    "test:mocha-18": "mocha --exit --timeout 240000 --require ts-node/register ./test/mocha.ts",
+    "test:mocha-20": "ts-node ./test/node.ts",
+    "test:javascript": "cross-env FORCE_JS=1 npm run test:mocha",
+    "test:wasm": "cross-env FORCE_WASM=1 npm run test:mocha",
+    "test:all": "npm run test && npm run test:wasm && npm run test:javascript",
+    "style": "eslint src/**/*.ts types/**/*.ts browser/src/**/*.ts test/**/*.ts",
+    "fix-style": "eslint --fix src/**/*.ts types/**/*.ts browser/src/**/*.ts test/**/*.ts",
+    "fix:style": "npm run fix-style",
+    "install": "npm run prebuild:install && npm run js:build:conditional",
+    "sync:versions": "node ./scripts/sync_version.js",
+    "check:versions": "node ./scripts/check_versions.js",
+    "prepublishOnly": "npm run all:build && npm run test:all"
+  },
+  "files": [
+    "dist/*",
+    "external/*",
+    "scripts/*",
+    "src/*",
+    "include/*",
+    "CREDITS"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "engineStrict": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gibme-npm/crypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gibme-npm/crypto/issues"
+  },
+  "author": {
+    "name": "Brandon Lehmann",
+    "email": "brandonlehmann@gmail.com"
+  },
+  "devDependencies": {
+    "@types/bindings": "^1.5.5",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "cmake-js": "^7.3.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.7.3",
+    "prebuild": "^13.0.1",
+    "run-script-os": "^1.1.6",
+    "ts-node": "^10.9.2",
+    "typedoc": "^0.26.5",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "js-sha3": "^0.9.3",
+    "nan": "^2.22.0",
+    "prebuild-install": "^7.1.2"
+  }
+}
