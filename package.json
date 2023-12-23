@@ -1,0 +1,90 @@
+{
+  "name": "@gibme/crypto",
+  "version": "7.0.0",
+  "description": "Advanced Cryptographic Functions",
+  "license": "MIT",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn build:typescript",
+    "build:all-modules": "npm run build:node && npm run build:javascript && npm run build:typescript",
+    "build:docs": "typedoc",
+    "build:webpack": "auto-pack",
+    "clean:node": "cmake-js clean",
+    "build:node": "cross-env BUILD_NODE=1 cmake-js compile",
+    "rebuild:node": "npm run clean:node && npm run build:node",
+    "build:node:debug": "env DEBUG_PRINT=1 BUILD_NODE=1 cmake-js compile",
+    "rebuild:node:debug": "npm run clean:node && npm run build:node:debug",
+    "build:javascript": "run-script-os",
+    "build:javascript:win32": "build_js.sh",
+    "build:javascript:default": "./build_js.sh",
+    "build:conditional:javascript": "test -f .gitsource && yarn build:javascript || echo \"SKIP JS BUILD: NOT GIT SOURCE\"",
+    "build:typescript": "tsc",
+    "prebuild": "cross-env BUILD_NODE=1 prebuild --backend cmake-js",
+    "prebuild:all": "cross-env BUILD_NODE=1 prebuild --backend cmake-js --all",
+    "prebuild:install": "prebuild-install --download --verbose || yarn run build:node",
+    "test": "npm run test:style && npm run test:typecheck && npm run test:mocha",
+    "test:typecheck": "tsc --noEmit",
+    "test:style": "npm run style",
+    "test:mocha": "mocha --exit --timeout 240000 --require ts-node/register test/test.ts",
+    "test:javascript": "cross-env FORCE_JS=1 npm run test:mocha",
+    "test:wasm": "cross-env FORCE_WASM=1 npm run test:mocha",
+    "test:all": "npm run test && npm run test:wasm && npm run test:javascript",
+    "style": "eslint typescript/**/*.ts test/**/*.ts",
+    "fix-style": "eslint --fix typescript/**/*.ts test/**/*.ts",
+    "fix:style": "npm run fix-style",
+    "install": "npm run prebuild:install && npm run build:conditional:javascript",
+    "prepublishOnly": "npm run build:all-modules && npm run test:all && npm run build:webpack"
+  },
+  "files": [
+    "dist/*",
+    "external/*",
+    "scripts/*",
+    "src/*",
+    "include/*",
+    "CREDITS"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "engineStrict": true,
+  "author": {
+    "name": "Brandon Lehmann",
+    "email": "brandonlehmann@gmail.com"
+  },
+  "webpack": {
+    "entry": {
+      "Crypto": "./typescript/index.ts"
+    }
+  },
+  "devDependencies": {
+    "@gibme/auto-pack": "^0.0.10",
+    "@types/bindings": "^1.5.5",
+    "@types/mime-types": "^2.1.4",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^20.9.1",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "cmake-js": "^7.2.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.53.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "prebuild": "^12.1.0",
+    "run-script-os": "^1.1.6",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.25.3",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@gibme/bytepack": "^1.0.4",
+    "bindings": "^1.5.0",
+    "js-sha3": "^0.9.3",
+    "nan": "^2.18.0",
+    "prebuild-install": "^7.1.1"
+  }
+}

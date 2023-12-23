@@ -1,0 +1,81 @@
+name: CI Build Tests
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  schedule:
+    - cron: '30 3 * * *'
+
+jobs:
+  node_build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: ['16', '18', '20']
+    name: ${{ matrix.os }} - Node ${{ matrix.node }} Test
+    env:
+      MSBUILD_PATH: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin"
+      CCACHE_DIR: $GITHUB_WORKSPACE/.ccache
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checkout Submodules
+        run: git submodule update --init --recursive
+      - name: Install ccache (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt update
+          sudo apt install -y ccache
+      - name: Install ccache (OSX)
+        if: matrix.os == 'macos-latest'
+        run: brew install ccache || brew upgrade ccache
+      - name: Retrieve ccache
+        uses: actions/cache@v1
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.os }}-${{ matrix.NAME }}-node-${{ matrix.node }}
+      - uses: actions/setup-node@v1
+        name: Set up Node
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: 'https://registry.npmjs.org'
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ matrix.node }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-${{ matrix.node }}-
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
+        env:
+          CCACHE_DIR: $GITHUB_WORKSPACE/.ccache
+        run: yarn
+      - name: Build WASM & Javascript (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: ./build_js.sh
+      - name: Check Typescript Style
+        run: yarn test:style
+      - name: Build Typescript
+        run: yarn build:typescript
+      - name: Execute Node C++ Addon Unit Tests
+        run: yarn test
+      - name: Execute JS Unit Tests
+        run: yarn test:javascript
+      - name: Execute WASM Unit Tests
+        run: yarn test:wasm
+      - name: Generate Prebuilds
+        if: matrix.node == '16' && github.event_name == 'release'
+        run: |
+          yarn prebuild-all --strip
+          yarn prebuild-all --strip -u ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish to NPM
+        if: matrix.node == '16' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
