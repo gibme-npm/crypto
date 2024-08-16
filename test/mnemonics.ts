@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, Brandon Lehmann
+// Copyright (c) 2020-2024, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -25,7 +25,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import Crypto, { crypto_seed_t, Language, LanguageName } from '../typescript';
-import { before, describe, it } from 'mocha';
 import assert from 'assert';
 
 const seed_hex = 'f39ea2ac069128355a8d8f5b3803cb6220050249511595497cec53a533dfcf07';
@@ -41,7 +40,7 @@ const mnemonic_phrase = [
     'tool'
 ].join(' ');
 
-const test_language = (crypto: Crypto, language: Language) => {
+const test_language = (crypto: Crypto, language: Language, describe: any, it: any, before: any) => {
     const _language = LanguageName(language);
 
     describe(`${_language}`, async () => {
