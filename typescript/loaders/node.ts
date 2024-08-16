@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, Brandon Lehmann
+// Copyright (c) 2020-2024, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,11 +24,12 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import bindings from 'bindings';
 import { ExternalModuleInterface } from '../types';
 
 const load_module = async (): Promise<ExternalModuleInterface | undefined> => {
     try {
+        const bindings = (await import('bindings')).default;
+
         const module = bindings('crypto-module.node') as ExternalModuleInterface;
 
         if (Object.getOwnPropertyNames(module).length === 0 || typeof module.sha3 === 'undefined') {

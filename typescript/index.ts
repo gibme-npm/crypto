@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, Brandon Lehmann
+// Copyright (c) 2020-2024, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -252,6 +252,10 @@ export default class Crypto {
     private static async load_node_library (): Promise<boolean> {
         const imported = await import('./loaders/node');
 
+        if (typeof imported.default === 'undefined') {
+            return false;
+        }
+
         const module = await imported.default();
 
         if (module) {
@@ -274,6 +278,10 @@ export default class Crypto {
     private static async load_js_library (): Promise<boolean> {
         const imported = await import('./loaders/javascript');
 
+        if (typeof imported.default === 'undefined') {
+            return false;
+        }
+
         const module = await imported.default();
 
         if (module) {
@@ -295,6 +303,10 @@ export default class Crypto {
      */
     private static async load_wasm_library (): Promise<boolean> {
         const imported = await import('./loaders/wasm');
+
+        if (typeof imported.default === 'undefined') {
+            return false;
+        }
 
         const module = await imported.default();
 
