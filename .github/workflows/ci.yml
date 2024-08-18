@@ -70,12 +70,48 @@ jobs:
       - name: Execute WASM Unit Tests
         run: yarn test:wasm
       - name: Generate Prebuilds
-        if: matrix.node == '16' && github.event_name == 'release'
+        if: matrix.node == '18' && github.event_name == 'release'
         run: |
           yarn prebuild-all --strip
           yarn prebuild-all --strip -u ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to NPM
-        if: matrix.node == '16' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+        if: matrix.node == '18' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  browser_build:
+    needs: node_build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node: [ '18', '20' ]
+    name: ${{ matrix.os }} - Node ${{ matrix.node }} Test
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        name: Set up Node
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
+        working-directory: ./browser
+        run: yarn
+      - name: Check Typescript Style
+        working-directory: ./browser
+        run: yarn test:style
+      - name: Build Typescript
+        working-directory: ./browser
+        run: yarn build:typescript
+      - name: Build Webpack
+        working-directory: ./browser
+        run: yarn build:webpack
+      - name: Publish to NPM
+        if: matrix.node == '18' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+        working-directory: ./browser
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public

@@ -25,88 +25,36 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import {
-    AESInput,
-    CallSignature,
-    CallWithArguments,
-    CallWithoutArguments,
-    CheckRingSignatureInput,
+    Library,
     crypto_borromean_signature_t,
     crypto_bulletproof_plus_t,
     crypto_bulletproof_t,
     crypto_clsag_signature_t,
     crypto_seed_t,
     crypto_triptych_signature_t,
-    ExternalModuleInterface,
-    GenerateRingSignatureInput,
     key_pair_t,
     Language,
-    LanguageName,
+    ICryptoLibrary,
     LibraryType,
-    LibraryTypeName,
-    ModuleResult,
-    ModuleSettings
+    ModuleSettings,
+    ModuleResult
 } from './types';
-import { Reader, Writer } from '@gibme/bytepack';
-import BigInteger from 'big-integer';
+import { LibraryTypeName, is_hex } from './helpers';
+import { uint256 } from './uint64';
+// import { Reader, Writer } from '@gibme/bytepack';
 
-export {
-    crypto_borromean_signature_t,
-    crypto_bulletproof_t,
-    crypto_bulletproof_plus_t,
-    crypto_clsag_signature_t,
-    crypto_seed_t,
-    crypto_triptych_signature_t,
-    key_pair_t,
-    LibraryType,
-    ExternalModuleInterface,
-    ModuleResult,
-    CallWithArguments,
-    CallWithoutArguments,
-    Language,
-    LanguageName
-};
-
-/** @ignore */
-const runtime_configuration: ModuleSettings = {
-    type: LibraryType.UNKNOWN
-};
-
-/** @ignore */
-const external_library: Partial<ExternalModuleInterface> = {};
-
-/** @ignore */
-export const is_hex = (value: string): boolean => {
-    return /^[0-9a-f]+$/i.test(value);
-};
+export * from './types';
+export * from './helpers';
 
 /**
- * Constructs a Module Result
- *
- * Note: This is typically only used by external cryptographic library calls
- * so that it mimics our underlying library call results
- *
- * @param error
- * @param result
- * @param error_message
+ * @ignore
  */
-export const make_module_result = <ResultType = string> (
-    error: boolean,
-    result: ResultType,
-    error_message?: string
-): string => {
-    const output: ModuleResult<ResultType> = {
-        error,
-        result
+export abstract class CryptoModule {
+    private static _external_library: Partial<ICryptoLibrary> = {};
+    protected static runtime_configuration: ModuleSettings = {
+        type: LibraryType.UNKNOWN
     };
 
-    if (error_message) {
-        output.error_message = error_message;
-    }
-
-    return JSON.stringify(output);
-};
-
-export default class Crypto {
     /**
      * We cannot create a new instance using this method as we need to await the
      * loading of an underlying module, hence, we need to await the static
@@ -115,14 +63,13 @@ export default class Crypto {
      * @protected
      */
     // eslint-disable-next-line no-useless-constructor
-    protected constructor () {
-    }
+    protected constructor () {}
 
     /**
      * Gets the external library calls that replace our cryptographic method calls
      */
-    public static get external_library (): Partial<ExternalModuleInterface> {
-        return external_library;
+    public static get external_library (): Partial<ICryptoLibrary> {
+        return this._external_library;
     }
 
     /**
@@ -130,18 +77,9 @@ export default class Crypto {
      *
      * @param config
      */
-    public set external_library (config: Partial<ExternalModuleInterface>) {
-        Crypto.external_library = config;
-    }
-
-    /**
-     * Sets external library calls that replace our cryptographic method calls
-     *
-     * @param config
-     */
-    public static set external_library (config: Partial<ExternalModuleInterface>) {
+    public static set external_library (config: Partial<ICryptoLibrary>) {
         for (const key of Object.keys(config)) {
-            external_library[key] = config[key];
+            this._external_library[key] = config[key];
         }
     }
 
@@ -149,14 +87,14 @@ export default class Crypto {
      * Returns the underlying cryptographic library name
      */
     public static get library_name (): string {
-        return LibraryTypeName(runtime_configuration.type);
+        return LibraryTypeName(this.runtime_configuration.type);
     }
 
     /**
      * Returns the underlying cryptographic library type
      */
     public static get library_type (): LibraryType {
-        return runtime_configuration.type;
+        return this.runtime_configuration.type;
     }
 
     /**
@@ -164,28 +102,37 @@ export default class Crypto {
      * Node.js C++ Addon type
      */
     public static get is_native (): boolean {
-        return runtime_configuration.type === LibraryType.NODE;
+        return this.runtime_configuration.type === LibraryType.NODE;
+    }
+
+    /**
+     * Sets external library calls that replace our cryptographic method calls
+     *
+     * @param config
+     */
+    public set external_library (config: Partial<ICryptoLibrary>) {
+        CryptoModule.external_library = config;
     }
 
     /**
      * Gets the external library calls that replace our cryptographic method calls
      */
-    public get external_library (): Partial<ExternalModuleInterface> {
-        return Crypto.external_library;
+    public get external_library (): Partial<ICryptoLibrary> {
+        return CryptoModule.external_library;
     }
 
     /**
      * Returns the underlying cryptographic library name
      */
     public get library_name (): string {
-        return LibraryTypeName(runtime_configuration.type);
+        return CryptoModule.library_name;
     }
 
     /**
      * Returns the underlying cryptographic library type
      */
     public get library_type (): LibraryType {
-        return runtime_configuration.type;
+        return CryptoModule.library_type;
     }
 
     /**
@@ -193,132 +140,7 @@ export default class Crypto {
      * Node.js C++ Addon type
      */
     public get is_native (): boolean {
-        return runtime_configuration.type === LibraryType.NODE;
-    }
-
-    /**
-     * Initializes a new instance of this class after attempting to load
-     * the underlying cryptographic library in the order the fastest
-     * running library to the slowest
-     *
-     * @param externalLibrary
-     */
-    public static async init (
-        externalLibrary: Partial<ExternalModuleInterface> = {}
-    ): Promise<Crypto> {
-        Crypto.external_library = externalLibrary;
-
-        if (!runtime_configuration.library) {
-            if (await Crypto.load_node_library()) {
-                return new Crypto();
-            }
-
-            if (await Crypto.load_wasm_library()) {
-                return new Crypto();
-            }
-
-            if (await Crypto.load_js_library()) {
-                return new Crypto();
-            }
-
-            throw new Error('Could not initialize an underlying library');
-        }
-
-        return new Crypto();
-    }
-
-    /**
-     * Forces the library to use the Javascript ASM.js underlying
-     * cryptographic library if it can
-     */
-    public static async force_js_library (): Promise<boolean> {
-        return Crypto.load_js_library();
-    }
-
-    /**
-     * Forces the library to use the WASM underlying cryptographic
-     * library if it can
-     */
-    public static async force_wasm_library (): Promise<boolean> {
-        return Crypto.load_wasm_library();
-    }
-
-    /**
-     * Attempts to load the Node.js C++ Addon module as the underlying
-     * cryptographic library
-     *
-     * @private
-     */
-    private static async load_node_library (): Promise<boolean> {
-        const imported = await import('./loaders/node');
-
-        if (typeof imported.default === 'undefined') {
-            return false;
-        }
-
-        const module = await imported.default();
-
-        if (module) {
-            runtime_configuration.type = LibraryType.NODE;
-
-            runtime_configuration.library = module;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Attempts to load the Javascript ASM.js module as the underlying
-     * cryptographic library
-     *
-     * @private
-     */
-    private static async load_js_library (): Promise<boolean> {
-        const imported = await import('./loaders/javascript');
-
-        if (typeof imported.default === 'undefined') {
-            return false;
-        }
-
-        const module = await imported.default();
-
-        if (module) {
-            runtime_configuration.type = LibraryType.JS;
-
-            runtime_configuration.library = module;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Attempts to load the WASM module as the underlying cryptographic
-     * library
-     *
-     * @private
-     */
-    private static async load_wasm_library (): Promise<boolean> {
-        const imported = await import('./loaders/wasm');
-
-        if (typeof imported.default === 'undefined') {
-            return false;
-        }
-
-        const module = await imported.default();
-
-        if (module) {
-            runtime_configuration.type = LibraryType.WASM;
-
-            runtime_configuration.library = module;
-
-            return true;
-        }
-
-        return false;
+        return CryptoModule.is_native;
     }
 
     /**
@@ -389,7 +211,7 @@ export default class Crypto {
             public_view?: string
         }>('base58_address_decode', base58);
 
-        if (new Reader(result.public_view).uint256_t().toJSNumber() === 1) {
+        if (result.public_view && uint256.from(result.public_view).value === BigInt(1)) {
             delete result.public_view;
         }
 
@@ -412,7 +234,7 @@ export default class Crypto {
             public_view?: string
         }>('cn_base58_address_decode', base58);
 
-        if (new Reader(result.public_view).uint256_t().toJSNumber() === 1) {
+        if (result.public_view && uint256.from(result.public_view).value === BigInt(1)) {
             delete result.public_view;
         }
 
@@ -932,7 +754,7 @@ export default class Crypto {
             message_digest,
             secret_ephemeral,
             public_keys
-        } as GenerateRingSignatureInput);
+        } as Library.GenerateRingSignature);
     }
 
     /**
@@ -955,7 +777,7 @@ export default class Crypto {
             key_image,
             public_keys,
             real_output_index
-        } as GenerateRingSignatureInput);
+        } as Library.GenerateRingSignature);
     }
 
     /**
@@ -974,7 +796,7 @@ export default class Crypto {
             secret_ephemeral,
             real_output_index,
             signature
-        } as GenerateRingSignatureInput<crypto_borromean_signature_t>);
+        } as Library.GenerateRingSignature<crypto_borromean_signature_t>);
     }
 
     /**
@@ -998,7 +820,7 @@ export default class Crypto {
                 key_image,
                 public_keys,
                 signature
-            } as CheckRingSignatureInput<crypto_borromean_signature_t>);
+            } as Library.CheckRingSignature<crypto_borromean_signature_t>);
 
             return true;
         } catch {
@@ -1031,7 +853,7 @@ export default class Crypto {
         pseudo_blinding_factor?: string,
         pseudo_commitment?: string
     ): Promise<crypto_clsag_signature_t> {
-        const options: GenerateRingSignatureInput = {
+        const options: Library.GenerateRingSignature = {
             message_digest,
             secret_ephemeral,
             public_keys
@@ -1080,7 +902,7 @@ export default class Crypto {
         pseudo_blinding_factor?: string,
         pseudo_commitment?: string
     ): Promise<{ signature: crypto_clsag_signature_t, h: string[], mu_P: string }> {
-        const options: GenerateRingSignatureInput = {
+        const options: Library.GenerateRingSignature = {
             message_digest,
             key_image,
             public_keys,
@@ -1128,7 +950,7 @@ export default class Crypto {
             signature,
             h,
             mu_P
-        } as GenerateRingSignatureInput<crypto_clsag_signature_t>);
+        } as Library.GenerateRingSignature<crypto_clsag_signature_t>);
     }
 
     /**
@@ -1149,7 +971,7 @@ export default class Crypto {
         commitments?: string[]
     ): Promise<boolean> {
         try {
-            const options: CheckRingSignatureInput<crypto_clsag_signature_t> = {
+            const options: Library.CheckRingSignature<crypto_clsag_signature_t> = {
                 message_digest,
                 key_image,
                 public_keys,
@@ -1193,7 +1015,7 @@ export default class Crypto {
         pseudo_blinding_factor: string,
         pseudo_commitment: string
     ): Promise<crypto_triptych_signature_t> {
-        const options: GenerateRingSignatureInput = {
+        const options: Library.GenerateRingSignature = {
             message_digest,
             secret_ephemeral,
             public_keys
@@ -1242,7 +1064,7 @@ export default class Crypto {
         pseudo_blinding_factor: string,
         pseudo_commitment: string
     ): Promise<{ signature: crypto_triptych_signature_t, xpow: string }> {
-        const options: GenerateRingSignatureInput = {
+        const options: Library.GenerateRingSignature = {
             message_digest,
             key_image,
             public_keys,
@@ -1284,7 +1106,7 @@ export default class Crypto {
             secret_ephemeral,
             signature,
             xpow
-        } as GenerateRingSignatureInput<crypto_triptych_signature_t>);
+        } as Library.GenerateRingSignature<crypto_triptych_signature_t>);
     }
 
     /**
@@ -1305,7 +1127,7 @@ export default class Crypto {
         commitments: string[]
     ): Promise<boolean> {
         try {
-            const options: CheckRingSignatureInput<crypto_triptych_signature_t> = {
+            const options: Library.CheckRingSignature<crypto_triptych_signature_t> = {
                 message_digest,
                 key_image,
                 public_keys,
@@ -1514,24 +1336,20 @@ export default class Crypto {
      */
     public async toggle_masked_amount (
         amount_mask: string,
-        amount: string | number | BigInteger.BigInteger
-    ): Promise<BigInteger.BigInteger> {
+        amount: string | number | bigint
+    ): Promise<bigint> {
         if (typeof amount === 'number') {
-            const writer = new Writer().uint256_t(amount);
-            amount = new Reader(writer).uint256_t();
+            amount = BigInt(amount);
         } else if (typeof amount === 'string') {
-            amount = new Reader(amount).uint256_t();
+            amount = uint256.from(amount).value;
         }
-
-        const writer = new Writer();
-        writer.uint256_t(amount);
 
         const result = await this.execute('toggle_masked_amount', {
             amount_mask,
-            amount: writer.toString()
+            amount: uint256(amount).toString()
         });
 
-        return new Reader(result).uint64_t();
+        return uint256.from(result).value;
     }
 
     /**
@@ -1822,7 +1640,7 @@ export default class Crypto {
             (input as string) = JSON.stringify(input);
         }
 
-        const options: AESInput = {
+        const options: Library.AES = {
             input: (input as string),
             password
         };
@@ -1846,7 +1664,7 @@ export default class Crypto {
         password: string,
         iterations?: number
     ): Promise<OutputType> {
-        const options: AESInput = {
+        const options: Library.AES = {
             input,
             password
         };
@@ -1876,17 +1694,17 @@ export default class Crypto {
         method: string,
         argument?: ArgumentType
     ): Promise<ResultType> {
-        const method_call: CallSignature | undefined = (() => {
-            if (typeof external_library[method] !== 'undefined') {
-                return external_library[method];
+        const method_call: Library.CallTypes.Signature | undefined = (() => {
+            if (typeof this.external_library[method] !== 'undefined') {
+                return this.external_library[method];
             }
 
-            if (!runtime_configuration.library) {
+            if (!CryptoModule.runtime_configuration.library) {
                 return;
             }
 
-            if (typeof runtime_configuration.library[method] !== 'undefined') {
-                return runtime_configuration.library[method];
+            if (typeof CryptoModule.runtime_configuration.library[method] !== 'undefined') {
+                return CryptoModule.runtime_configuration.library[method];
             }
 
             return undefined;
@@ -1899,9 +1717,9 @@ export default class Crypto {
         let result: string;
 
         if (argument) {
-            result = await (method_call as CallWithArguments)(JSON.stringify(argument));
+            result = await (method_call as Library.CallTypes.WithArguments)(JSON.stringify(argument));
         } else {
-            result = await (method_call as CallWithoutArguments)();
+            result = await (method_call as Library.CallTypes.WithoutArguments)();
         }
 
         const json: ModuleResult<ResultType> = JSON.parse(result);
@@ -1914,5 +1732,3 @@ export default class Crypto {
         return json.result;
     }
 }
-
-export { Crypto };

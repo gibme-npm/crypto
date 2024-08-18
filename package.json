@@ -9,7 +9,6 @@
     "build": "npm run build:typescript",
     "build:all-modules": "npm run build:node && npm run build:javascript && npm run build:typescript",
     "build:docs": "typedoc",
-    "build:webpack": "auto-pack",
     "clean:node": "cmake-js clean",
     "build:node": "cross-env BUILD_NODE=1 cmake-js compile",
     "rebuild:node": "npm run clean:node && npm run build:node",
@@ -32,11 +31,11 @@
     "test:javascript": "cross-env FORCE_JS=1 npm run test:mocha",
     "test:wasm": "cross-env FORCE_WASM=1 npm run test:mocha",
     "test:all": "npm run test && npm run test:wasm && npm run test:javascript",
-    "style": "eslint typescript/**/*.ts test/**/*.ts",
-    "fix-style": "eslint --fix typescript/**/*.ts test/**/*.ts",
+    "style": "eslint src/**/*.ts types/**/*.ts test/**/*.ts",
+    "fix-style": "eslint --fix src/**/*.ts types/**/*.ts test/**/*.ts",
     "fix:style": "npm run fix-style",
     "install": "npm run prebuild:install && npm run build:conditional:javascript",
-    "prepublishOnly": "npm run build:all-modules && npm run test:all && npm run build:webpack"
+    "prepublishOnly": "npm run build:all-modules && npm run test:all"
   },
   "files": [
     "dist/*",
@@ -47,31 +46,32 @@
     "CREDITS"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "engineStrict": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gibme-npm/crypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gibme-npm/crypto/issues"
+  },
   "author": {
     "name": "Brandon Lehmann",
     "email": "brandonlehmann@gmail.com"
   },
-  "webpack": {
-    "entry": {
-      "Crypto": "./typescript/index.ts"
-    }
-  },
   "devDependencies": {
-    "@gibme/auto-pack": "^0.4.3",
     "@types/bindings": "^1.5.5",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^22.3.0",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@types/node": "^22.4.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
     "cmake-js": "^7.3.0",
     "cross-env": "^7.0.3",
-    "eslint": "^8.53.0",
+    "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.7.3",
@@ -82,7 +82,6 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@gibme/bytepack": "^1.0.12",
     "bindings": "^1.5.0",
     "js-sha3": "^0.9.3",
     "nan": "^2.20.0",

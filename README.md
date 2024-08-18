@@ -10,6 +10,8 @@ It wraps [https://github.com/gibme-c/crypto](https://github.com/gibme-c/crypto) 
 
 **Note**: Due to the size of the resulting WASM/javascript module(s), only English mnemonic words are compiled by default.
 
+**Note**: If you are looking to use this package in a browser, please read the browser directions below for a lighter installation path/method and a minimal package size.
+
 ### Features
 
 * Core Structure Types
@@ -100,7 +102,7 @@ If the prebuild for your system does not exist, it will compile the Node.js nati
 * [Node.js](https://nodejs.org) >= +16.x LTS (or Node v16)
 * Compiler supporting C++17 (gcc/clang/etc)
 
-### Node.js / Typescript / Javascript Installation
+### Node.js Installation
 
 #### Yarn
 ```bash
@@ -112,9 +114,9 @@ yarn add @gibme/crypto
 npm install @gibme/crypto
 ```
 
-### Initialization
+#### Initialization
 
-#### TypeScript
+##### TypeScript
 
 ```javascript
 import Crypto from '@gibme/crypto';
@@ -124,10 +126,46 @@ import Crypto from '@gibme/crypto';
 })
 ```
 
-#### CommonJS
+##### CommonJS
 
 ```javascript
 const Crypto = require('@gibme/crypto').default
+
+(async() => {
+    const crypto = await Crypto.init();
+})
+```
+
+### Browser Usage / Installation
+
+#### Yarn
+
+```bash
+yarn add @gibme/crypto-browser
+```
+
+#### NPM
+
+```bash
+npm install @gibme/crypto-browser
+```
+
+#### Initialization
+
+##### TypeScript
+
+```javascript
+import Crypto from '@gibme/crypto-browser';
+
+(async() => {
+    const crypto = await Crypto.init();
+})
+```
+
+##### CommonJS
+
+```javascript
+const Crypto = require('@gibme/crypto-browser').default
 
 (async() => {
     const crypto = await Crypto.init();

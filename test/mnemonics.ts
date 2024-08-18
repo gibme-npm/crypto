@@ -24,8 +24,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Crypto, { crypto_seed_t, Language, LanguageName } from '../typescript';
-import assert from 'assert';
+import Crypto, { crypto_seed_t, Language, LanguageName } from '../src';
+import { equal, notEqual } from 'assert';
 
 const seed_hex = 'f39ea2ac069128355a8d8f5b3803cb6220050249511595497cec53a533dfcf07';
 const mnemonic_phrase = [
@@ -53,17 +53,17 @@ const test_language = (crypto: Crypto, language: Language, describe: any, it: an
         it('Encode', async function () {
             const words = await crypto.mnemonics_encode(seed_hex, language);
 
-            assert.notEqual(words, seed.mnemonic_phrase);
+            notEqual(words, seed.mnemonic_phrase);
 
             seed = await crypto.seed_recover(words, language);
 
-            assert.equal(seed.seed, seed_hex);
+            equal(seed.seed, seed_hex);
         });
 
         it('Decode', async function () {
             const result = await crypto.mnemonics_decode(seed.mnemonic_phrase.split(' '), language);
 
-            assert.equal(result.seed, seed_hex);
+            equal(result.seed, seed_hex);
         });
 
         it('Word Index & Checksum Index', async function () {
@@ -85,19 +85,19 @@ const test_language = (crypto: Crypto, language: Language, describe: any, it: an
 
             const index = await crypto.mnemonics_calculate_checksum_index(words, language);
 
-            assert.equal(index, expected_index);
+            equal(index, expected_index);
         });
 
         it('Word List', async function () {
             const words = await crypto.word_list(language);
 
-            assert.equal(words.length, 2048);
+            equal(words.length, 2048);
         });
 
         it('Word List Trimmed', async function () {
             const words = await crypto.word_list_trimmed(language);
 
-            assert.equal(words.length, 2048);
+            equal(words.length, 2048);
         });
     });
 };

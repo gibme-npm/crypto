@@ -24,9 +24,9 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { ExternalModuleInterface } from '../types';
+import type { ICryptoLibrary } from '../../types';
 
-const load_module = async (): Promise<ExternalModuleInterface | undefined> => {
+const load_module = async (): Promise<ICryptoLibrary | undefined> => {
     try {
         const WASM = await (async () => {
             try {
@@ -40,7 +40,7 @@ const load_module = async (): Promise<ExternalModuleInterface | undefined> => {
             return;
         }
 
-        const module = await (new WASM()) as ExternalModuleInterface;
+        const module = await (new WASM()) as ICryptoLibrary;
 
         if (Object.getOwnPropertyNames(module).length === 0 || typeof module.sha3 === 'undefined') {
             return;

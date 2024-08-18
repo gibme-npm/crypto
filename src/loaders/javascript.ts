@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, Brandon Lehmann
+// Copyright (c) 2020-2023, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,13 +24,23 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { ExternalModuleInterface } from '../types';
+import type { ICryptoLibrary } from '../../types';
 
-const load_module = async (): Promise<ExternalModuleInterface | undefined> => {
+const load_module = async (): Promise<ICryptoLibrary | undefined> => {
     try {
-        const bindings = (await import('bindings')).default;
+        const JS = await (async () => {
+            try {
+                return require('../../dist/crypto-module.js');
+            } catch {
+                return null;
+            }
+        })();
 
-        const module = bindings('crypto-module.node') as ExternalModuleInterface;
+        if (!JS) {
+            return;
+        }
+
+        const module = await (new JS()) as ICryptoLibrary;
 
         if (Object.getOwnPropertyNames(module).length === 0 || typeof module.sha3 === 'undefined') {
             return;

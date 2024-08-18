@@ -187,6 +187,7 @@ if(BUILD_JS OR BUILD_WASM)
             -s EXPORT_NAME="'CryptoModule'"
             -s POLYFILL_OLD_MATH_FUNCTIONS=1
             -s MODULARIZE=1
+            -s ASSERTIONS=1
             --bind
     )
 

@@ -29,9 +29,10 @@ import Crypto, {
     crypto_bulletproof_t,
     make_module_result,
     is_hex,
-    Language, LibraryType
-} from '../typescript';
-import assert from 'assert';
+    Language,
+    LibraryType
+} from '../src';
+import { equal, deepEqual, notEqual, ok, fail } from 'assert';
 import { sha3_256 } from 'js-sha3';
 import test_language from './mnemonics';
 
@@ -85,32 +86,32 @@ export const run_test = (describe: any, it: any, before: any) => {
 
             describe('Module Sanity', async () => {
                 it('Library Type', async () => {
-                    assert.equal(Crypto.library_type, crypto.library_type);
+                    equal(Crypto.library_type, crypto.library_type);
                 });
 
                 it('Library Name', async () => {
-                    assert.equal(Crypto.library_name, crypto.library_name);
+                    equal(Crypto.library_name, crypto.library_name);
                 });
 
                 it('External Library', async () => {
                     crypto.external_library = {};
-                    assert.deepEqual(Crypto.external_library, crypto.external_library);
+                    deepEqual(Crypto.external_library, crypto.external_library);
                 });
 
                 it('is_native', async () => {
-                    assert.equal(Crypto.is_native, crypto.is_native);
+                    equal(Crypto.is_native, crypto.is_native);
 
                     if (process.env.FORCE_JS || process.env.FORCE_WASM) {
-                        assert.notEqual(crypto.is_native, true);
+                        notEqual(crypto.is_native, true);
                     } else {
-                        assert.equal(crypto.is_native, true);
+                        equal(crypto.is_native, true);
                     }
                 });
 
                 it('languages', async () => {
                     const _languages = await crypto.languages();
 
-                    assert.deepEqual(_languages, languages);
+                    deepEqual(_languages, languages);
                 });
             });
 
@@ -121,19 +122,19 @@ export const run_test = (describe: any, it: any, before: any) => {
                     it('Argon2d', async () => {
                         const result = await crypto.argon2d(INPUT_DATA, 4, 1024, 1);
 
-                        assert.equal(result, 'cd65323e3e56272fd19b745b0673318b21c2be5257f918267998b341719c3d5a');
+                        equal(result, 'cd65323e3e56272fd19b745b0673318b21c2be5257f918267998b341719c3d5a');
                     });
 
                     it('Argon2i', async () => {
                         const result = await crypto.argon2i(INPUT_DATA, 4, 1024, 1);
 
-                        assert.equal(result, 'debb2a3b51732bff26670753c5dbaedf6139c177108fe8e0744305c8d410a75a');
+                        equal(result, 'debb2a3b51732bff26670753c5dbaedf6139c177108fe8e0744305c8d410a75a');
                     });
 
                     it('Argon2id', async () => {
                         const result = await crypto.argon2id(INPUT_DATA, 4, 1024, 1);
 
-                        assert.equal(result, 'a6ac954bce48a46bc01a9b16b484ffb745401ae421b1b6f2e22cf474d4cac1c9');
+                        equal(result, 'a6ac954bce48a46bc01a9b16b484ffb745401ae421b1b6f2e22cf474d4cac1c9');
                     });
                 });
 
@@ -141,19 +142,19 @@ export const run_test = (describe: any, it: any, before: any) => {
                     it('SHA3', async () => {
                         const result = await crypto.sha3(INPUT_DATA);
 
-                        assert.equal(result, '974506601a60dc465e6e9acddb563889e63471849ec4198656550354b8541fcb');
+                        equal(result, '974506601a60dc465e6e9acddb563889e63471849ec4198656550354b8541fcb');
                     });
 
                     it('SHA3 Slow Hash [0]', async () => {
                         const result = await crypto.sha3_slow(INPUT_DATA);
 
-                        assert.equal(result, '974506601a60dc465e6e9acddb563889e63471849ec4198656550354b8541fcb');
+                        equal(result, '974506601a60dc465e6e9acddb563889e63471849ec4198656550354b8541fcb');
                     });
 
                     it('SHA3 Slow Hash [4096]', async () => {
                         const result = await crypto.sha3_slow(INPUT_DATA, 4096);
 
-                        assert.equal(result, 'c031be420e429992443c33c2a453287e2678e70b8bce95dfe7357bcbf36ca86c');
+                        equal(result, 'c031be420e429992443c33c2a453287e2678e70b8bce95dfe7357bcbf36ca86c');
                     });
                 });
 
@@ -161,7 +162,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     it('Blake2b', async () => {
                         const result = await crypto.blake2b(INPUT_DATA);
 
-                        assert.equal(result, '56a8ef7f9d7db21fa29b83eb77551f0c3e312525d6151946261911fc38a508c4');
+                        equal(result, '56a8ef7f9d7db21fa29b83eb77551f0c3e312525d6151946261911fc38a508c4');
                     });
                 });
 
@@ -169,15 +170,15 @@ export const run_test = (describe: any, it: any, before: any) => {
                     it('Hash to Point', async () => {
                         const result = await crypto.hash_to_point(INPUT_DATA);
 
-                        assert.ok(await crypto.check_point(result));
-                        assert.ok(!await crypto.check_scalar(result));
+                        ok(await crypto.check_point(result));
+                        ok(!await crypto.check_scalar(result));
                     });
 
                     it('Hash to Scalar', async () => {
                         const result = await crypto.hash_to_scalar(INPUT_DATA);
 
-                        assert.ok(await crypto.check_scalar(result));
-                        assert.ok(!await crypto.check_point(result));
+                        ok(await crypto.check_scalar(result));
+                        ok(!await crypto.check_point(result));
                     });
                 });
             });
@@ -190,13 +191,13 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Encrypt', async () => {
                     encrypted = await crypto.aes_encrypt(INPUT_DATA, PASSWORD);
 
-                    assert.notEqual(encrypted, INPUT_DATA);
+                    notEqual(encrypted, INPUT_DATA);
                 });
 
                 it('Decrypt', async () => {
                     const decrypted = await crypto.aes_decrypt(encrypted, PASSWORD);
 
-                    assert.equal(decrypted, INPUT_DATA);
+                    equal(decrypted, INPUT_DATA);
                 });
             });
 
@@ -208,7 +209,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const decoded = await crypto.base58_decode(encoded);
 
-                    assert.equal(decoded.toString('hex'), INPUT_DATA);
+                    equal(decoded.toString('hex'), INPUT_DATA);
                 });
 
                 it('Encode Fails', async () => {
@@ -217,7 +218,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     try {
                         await crypto.base58_decode_check(encoded);
 
-                        assert.fail();
+                        fail();
                     } catch {}
                 });
 
@@ -226,7 +227,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const decoded = await crypto.base58_decode_check(encoded);
 
-                    assert.equal(decoded.toString('hex'), INPUT_DATA);
+                    equal(decoded.toString('hex'), INPUT_DATA);
                 });
 
                 it('Encode Check Fails', async () => {
@@ -235,7 +236,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     try {
                         await crypto.base58_decode(encoded);
 
-                        assert.fail();
+                        fail();
                     } catch {}
                 });
             });
@@ -248,7 +249,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const decoded = await crypto.cn_base58_decode(encoded);
 
-                    assert.equal(decoded.toString('hex'), INPUT_DATA);
+                    equal(decoded.toString('hex'), INPUT_DATA);
                 });
 
                 it('Encode Fails', async () => {
@@ -257,7 +258,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     try {
                         await crypto.cn_base58_decode_check(encoded);
 
-                        assert.fail();
+                        fail();
                     } catch {}
                 });
 
@@ -266,7 +267,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const decoded = await crypto.cn_base58_decode_check(encoded);
 
-                    assert.equal(decoded.toString('hex'), INPUT_DATA);
+                    equal(decoded.toString('hex'), INPUT_DATA);
                 });
 
                 it('Encode Check Fails', async () => {
@@ -275,7 +276,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     try {
                         await crypto.cn_base58_decode(encoded);
 
-                        assert.fail();
+                        fail();
                     } catch {}
                 });
             });
@@ -299,9 +300,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const result = await crypto.base58_address_decode(encoded);
 
-                        assert.equal(result.prefix, prefix);
-                        assert.equal(result.public_spend, public_spend);
-                        assert.notEqual(result.public_view, public_view);
+                        equal(result.prefix, prefix);
+                        equal(result.public_spend, public_spend);
+                        notEqual(result.public_view, public_view);
                     });
 
                     it('CryptoNote Base58', async () => {
@@ -309,9 +310,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const result = await crypto.cn_base58_address_decode(encoded);
 
-                        assert.equal(result.prefix, prefix);
-                        assert.equal(result.public_spend, public_spend);
-                        assert.notEqual(result.public_view, public_view);
+                        equal(result.prefix, prefix);
+                        equal(result.public_spend, public_spend);
+                        notEqual(result.public_view, public_view);
                     });
                 });
 
@@ -321,9 +322,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const result = await crypto.base58_address_decode(encoded);
 
-                        assert.equal(result.prefix, prefix);
-                        assert.equal(result.public_spend, public_spend);
-                        assert.equal(result.public_view, public_view);
+                        equal(result.prefix, prefix);
+                        equal(result.public_spend, public_spend);
+                        equal(result.public_view, public_view);
                     });
 
                     it('CryptoNote Base58', async () => {
@@ -331,9 +332,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const result = await crypto.cn_base58_address_decode(encoded);
 
-                        assert.equal(result.prefix, prefix);
-                        assert.equal(result.public_spend, public_spend);
-                        assert.equal(result.public_view, public_view);
+                        equal(result.prefix, prefix);
+                        equal(result.public_spend, public_spend);
+                        equal(result.public_view, public_view);
                     });
                 });
             });
@@ -351,7 +352,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                 it('Calculate Base2 Exponent', async () => {
                     for (let i = 0; i < 16; ++i) {
-                        assert.equal(await crypto.calculate_base2_exponent(1 << i), i);
+                        equal(await crypto.calculate_base2_exponent(1 << i), i);
                     }
                 });
 
@@ -363,42 +364,42 @@ export const run_test = (describe: any, it: any, before: any) => {
                         hash = await crypto.random_hash();
                     } while (await crypto.check_scalar(hash));
 
-                    assert.ok(!await crypto.check_scalar(hash));
+                    ok(!await crypto.check_scalar(hash));
 
                     const result = await crypto.scalar_reduce(hash);
 
-                    assert.ok(await crypto.check_scalar(result));
-                    assert.notEqual(hash, result);
+                    ok(await crypto.check_scalar(result));
+                    notEqual(hash, result);
                 });
 
                 it('Check Scalar', async () => {
                     const value = 'bf356a444a9db6e5c396a36eb7207e2647c5f89db88b1e2218844bb54661910d';
 
-                    assert.ok(await crypto.check_scalar(value));
-                    assert.ok(!await crypto.check_point(value));
+                    ok(await crypto.check_scalar(value));
+                    ok(!await crypto.check_point(value));
                 });
 
                 it('Check Point', async () => {
                     const value = '9f18b169834781952bdb781384147db67b1674a32103950c23491ad2ca850258';
 
-                    assert.ok(!await crypto.check_scalar(value));
-                    assert.ok(await crypto.check_point(value));
+                    ok(!await crypto.check_scalar(value));
+                    ok(await crypto.check_point(value));
                 });
 
                 it('Random Scalar', async () => {
                     const scalar = await crypto.random_scalar();
 
-                    assert.ok(await crypto.check_scalar(scalar));
+                    ok(await crypto.check_scalar(scalar));
                 });
 
                 it('Random Point', async () => {
                     const point = await crypto.random_point();
 
-                    assert.ok(await crypto.check_point(point));
+                    ok(await crypto.check_point(point));
                 });
 
                 it('Random Hash', async () => {
-                    assert.notEqual(typeof await crypto.random_hash(), 'undefined');
+                    notEqual(typeof await crypto.random_hash(), 'undefined');
                 });
 
                 it('Random Scalars', async () => {
@@ -408,7 +409,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     for (const key of keys) {
                         if (found.indexOf(key) !== -1) {
-                            assert.fail();
+                            fail();
                         }
 
                         found.push(key);
@@ -422,7 +423,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     for (const key of keys) {
                         if (found.indexOf(key) !== -1) {
-                            assert.fail();
+                            fail();
                         }
 
                         found.push(key);
@@ -436,7 +437,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     for (const key of keys) {
                         if (found.indexOf(key) !== -1) {
-                            assert.fail();
+                            fail();
                         }
 
                         found.push(key);
@@ -446,8 +447,8 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Generate Random Keys', async () => {
                     const { public_key, secret_key } = await crypto.generate_keys();
 
-                    assert.ok(await crypto.check_point(public_key));
-                    assert.ok(await crypto.check_scalar(secret_key));
+                    ok(await crypto.check_point(public_key));
+                    ok(await crypto.check_scalar(secret_key));
                 });
 
                 it('Generate Sets of Random Keys', async () => {
@@ -465,7 +466,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                         promises.push(test(public_keys[i], secret_keys[i]));
                     }
 
-                    assert.ok(await Promise.all(promises));
+                    ok(await Promise.all(promises));
                 });
 
                 it('Secret Key to Public Key', async () => {
@@ -473,7 +474,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const public_key2 = await crypto.secret_key_to_public_key(secret_key);
 
-                    assert.equal(public_key, public_key2);
+                    equal(public_key, public_key2);
                 });
 
                 it('Generate Seed', async () => {
@@ -481,9 +482,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const words = mnemonic_phrase.split(' ');
 
-                    assert.notEqual(timestamp, 0);
-                    assert.equal(seed.length, 64);
-                    assert.notEqual(words.length, 0);
+                    notEqual(timestamp, 0);
+                    equal(seed.length, 64);
+                    notEqual(words.length, 0);
 
                     m_seed = seed;
                     m_words = words;
@@ -496,9 +497,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const words = mnemonic_phrase.split(' ');
 
-                    assert.notEqual(timestamp, 0);
-                    assert.equal(seed.length, 64);
-                    assert.notEqual(words.length, 0);
+                    notEqual(timestamp, 0);
+                    equal(seed.length, 64);
+                    notEqual(words.length, 0);
 
                     m_seed = seed;
                     m_words = words;
@@ -508,14 +509,14 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Restore Seed', async () => {
                     const { seed, timestamp } = await crypto.seed_recover(m_words);
 
-                    assert.equal(seed, m_seed);
-                    assert.equal(timestamp, m_timestamp);
+                    equal(seed, m_seed);
+                    equal(timestamp, m_timestamp);
                 });
 
                 it('Generate Spend Keys From Seed', async () => {
                     const { secret_key } = await crypto.seed_spend_keys(wallet_seed);
 
-                    assert.notEqual(secret_key, wallet_seed);
+                    notEqual(secret_key, wallet_seed);
                 });
 
                 it('Generate View Keys From Seed', async () => {
@@ -523,10 +524,10 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const view = await crypto.seed_view_keys(wallet_seed);
 
-                    assert.notEqual(spend.public_key, view.public_key);
-                    assert.notEqual(spend.secret_key, view.secret_key);
-                    assert.notEqual(spend.public_key, view.secret_key);
-                    assert.notEqual(spend.secret_key, view.public_key);
+                    notEqual(spend.public_key, view.public_key);
+                    notEqual(spend.secret_key, view.secret_key);
+                    notEqual(spend.public_key, view.secret_key);
+                    notEqual(spend.secret_key, view.public_key);
                 });
             });
 
@@ -547,44 +548,44 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Generate Key Derivation', async () => {
                     const derv = await crypto.generate_derivation(public_key, secret_key);
 
-                    assert.equal(derivation, derv);
+                    equal(derivation, derv);
                 });
 
                 it('Generate Key Derivation Scalar', async () => {
                     const scalar = await crypto.generate_derivation_scalar(derivation, 2);
 
-                    assert.equal(derivation_scalar, scalar);
+                    equal(derivation_scalar, scalar);
                 });
 
                 it('Derive Public Key', async () => {
                     const key = await crypto.derive_public_key(derivation_scalar, public_key);
 
-                    assert.equal(public_ephemeral, key);
+                    equal(public_ephemeral, key);
                 });
 
                 it('Derive Secret Key', async () => {
                     const key = await crypto.derive_secret_key(derivation_scalar, secret_key);
 
-                    assert.equal(secret_ephemeral, key);
+                    equal(secret_ephemeral, key);
                 });
 
                 it('Underive Public Key', async () => {
                     const key = await crypto.underive_public_key(
                         derivation, public_ephemeral, 2);
 
-                    assert.equal(public_key, key);
+                    equal(public_key, key);
                 });
 
                 it('Generate Key Image', async () => {
                     const key = await crypto.generate_key_image(public_ephemeral, secret_ephemeral);
 
-                    assert.equal(key_image, key);
+                    equal(key_image, key);
                 });
 
                 it('Generate Key Image v2', async () => {
                     const key = await crypto.generate_key_image_v2(secret_ephemeral);
 
-                    assert.equal(key_image_2, key);
+                    equal(key_image_2, key);
                 });
             });
 
@@ -604,17 +605,17 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Generate Outputs Proof', async () => {
                     proof = await crypto.generate_outputs_proof(secret_keys);
 
-                    assert.notEqual(proof.length, 0);
+                    notEqual(proof.length, 0);
 
                     const key_images = await crypto.check_outputs_proof(public_keys, proof);
 
-                    assert.equal(key_images.length, key_count);
+                    equal(key_images.length, key_count);
                 });
 
                 it('Check Outputs Proof', async () => {
                     const key_images = await crypto.check_outputs_proof(public_keys, proof);
 
-                    assert.equal(key_images.length, key_count);
+                    equal(key_images.length, key_count);
                 });
 
                 it('Check Output Proof: Failure', async () => {
@@ -623,7 +624,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                     const key_images = await crypto.check_outputs_proof(keys, proof)
                         .catch(() => []);
 
-                    assert.equal(key_images.length, 0);
+                    equal(key_images.length, 0);
                 });
             });
 
@@ -633,19 +634,19 @@ export const run_test = (describe: any, it: any, before: any) => {
                 it('Generate Subwallet #0', async () => {
                     const { secret_key } = await crypto.seed_spend_keys(wallet_seed, 0);
 
-                    assert.notEqual(secret_key, wallet_seed);
+                    notEqual(secret_key, wallet_seed);
                 });
 
                 it('Generate Subwallet #999', async () => {
                     const { secret_key } = await crypto.seed_spend_keys(wallet_seed, 999);
 
-                    assert.notEqual(secret_key, wallet_seed);
+                    notEqual(secret_key, wallet_seed);
                 });
 
                 it('Generate Subwallet #512000', async () => {
                     const { secret_key } = await crypto.seed_spend_keys(wallet_seed, 512000);
 
-                    assert.notEqual(secret_key, wallet_seed);
+                    notEqual(secret_key, wallet_seed);
                 });
             });
 
@@ -666,19 +667,19 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const pass = await crypto.check_signature(message_digest, public_ephemeral, signature);
 
-                    assert.ok(pass);
+                    ok(pass);
                 });
 
                 it('Prepare Signature', async () => {
                     const signature = await crypto.prepare_signature(message_digest, public_ephemeral);
 
-                    assert.ok(!await crypto.check_signature(message_digest, public_ephemeral, signature));
+                    ok(!await crypto.check_signature(message_digest, public_ephemeral, signature));
 
                     const _signature = await crypto.complete_signature(secret_ephemeral, signature);
 
                     const pass = await crypto.check_signature(message_digest, public_ephemeral, _signature);
 
-                    assert.ok(pass);
+                    ok(pass);
                 });
             });
 
@@ -740,7 +741,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             signature);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
 
                     it('Prepare Ring Signature', async () => {
@@ -750,7 +751,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             REAL_OUTPUT_INDEX);
 
-                        assert.ok(!await crypto.check_borromean_signature(
+                        ok(!await crypto.check_borromean_signature(
                             message_digest,
                             key_image,
                             public_keys,
@@ -767,7 +768,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             signature);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
                 });
 
@@ -784,7 +785,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             signature);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
 
                     it('Prepare Ring Signature', async () => {
@@ -794,7 +795,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             REAL_OUTPUT_INDEX);
 
-                        assert.ok(!await crypto.check_clsag_signature(
+                        ok(!await crypto.check_clsag_signature(
                             message_digest,
                             key_image,
                             public_keys,
@@ -813,7 +814,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             public_keys,
                             _signature);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
                 });
 
@@ -835,7 +836,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             signature,
                             public_commitments);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
 
                     it('Prepare Ring Signature', async () => {
@@ -849,7 +850,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             pseudo_blinding,
                             pseudo_commitment);
 
-                        assert.ok(!await crypto.check_clsag_signature(
+                        ok(!await crypto.check_clsag_signature(
                             message_digest,
                             key_image,
                             public_keys,
@@ -870,7 +871,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             _signature,
                             public_commitments);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
                 });
 
@@ -892,7 +893,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             signature,
                             public_commitments);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
 
                     it('Prepare Ring Signature', async () => {
@@ -906,7 +907,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             pseudo_blinding,
                             pseudo_commitment);
 
-                        assert.ok(!await crypto.check_triptych_signature(
+                        ok(!await crypto.check_triptych_signature(
                             message_digest,
                             key_image2,
                             public_keys,
@@ -925,7 +926,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             _signature,
                             public_commitments);
 
-                        assert.ok(pass);
+                        ok(pass);
                     });
                 });
             });
@@ -942,7 +943,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     C_2 = await crypto.generate_pedersen_commitment(blinding_factors[1], 2000);
 
-                    assert.notEqual(C_1, C_2);
+                    notEqual(C_1, C_2);
                 });
 
                 it('Generate Commitment Blinding Factor', async () => {
@@ -950,14 +951,14 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const bf = await crypto.generate_commitment_blinding_factor(derivation_scalar);
 
-                    assert.notEqual(derivation_scalar, bf);
+                    notEqual(derivation_scalar, bf);
                 });
 
                 it('Generate Transaction Fee Commitment', async () => {
                     C_fee = await crypto.generate_transaction_fee_commitment(100);
 
-                    assert.notEqual(C_fee, C_1);
-                    assert.notEqual(C_fee, C_2);
+                    notEqual(C_fee, C_1);
+                    notEqual(C_fee, C_2);
                 });
 
                 it('Generate Pseudo Commitments', async () => {
@@ -966,15 +967,15 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     pseudo_commitments = result.commitments;
 
-                    assert.equal(pseudo_commitments.length, 2);
+                    equal(pseudo_commitments.length, 2);
                 });
 
                 it('Check Commitments Parity', async () => {
-                    assert.ok(await crypto.check_commitments_parity(pseudo_commitments, [C_1, C_2], 100));
+                    ok(await crypto.check_commitments_parity(pseudo_commitments, [C_1, C_2], 100));
                 });
 
                 it('Fail Check Commitments Parity', async () => {
-                    assert.ok(!await crypto.check_commitments_parity(pseudo_commitments, [C_1, C_2], 300));
+                    ok(!await crypto.check_commitments_parity(pseudo_commitments, [C_1, C_2], 300));
                 });
 
                 it('Amount Masking', async () => {
@@ -990,9 +991,9 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const unmasked_amount2 = await crypto.toggle_masked_amount(amount_mask2, masked_amount);
 
-                    assert.notEqual(masked_amount, unmasked_amount);
-                    assert.equal(unmasked_amount.toJSNumber(), amount);
-                    assert.notEqual(unmasked_amount2, unmasked_amount);
+                    notEqual(masked_amount, unmasked_amount);
+                    equal(Number(unmasked_amount), amount);
+                    notEqual(unmasked_amount2, unmasked_amount);
                 });
             });
 
@@ -1007,14 +1008,14 @@ export const run_test = (describe: any, it: any, before: any) => {
                         proof = result.proof;
                         commitments = result.commitments;
 
-                        assert(await crypto.check_bulletproof([proof], [commitments]));
+                        ok(await crypto.check_bulletproof([proof], [commitments]));
                     });
 
                     it('Batched Verification', async () => {
                         const valid = await crypto.check_bulletproof(
                             [proof, proof], [commitments, commitments]);
 
-                        assert(valid);
+                        ok(valid);
                     });
 
                     it('Big Batch Verification', async () => {
@@ -1022,13 +1023,13 @@ export const run_test = (describe: any, it: any, before: any) => {
                             [proof, proof, proof, proof, proof, proof],
                             [commitments, commitments, commitments, commitments, commitments, commitments]);
 
-                        assert(valid);
+                        ok(valid);
                     });
 
                     it('Fail Verification', async () => {
                         const fake_commitments = await crypto.random_points(1);
 
-                        assert(!await crypto.check_bulletproof([proof], [fake_commitments]));
+                        ok(!await crypto.check_bulletproof([proof], [fake_commitments]));
                     });
                 });
 
@@ -1044,14 +1045,14 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const pass = await crypto.check_bulletproof_plus([proof], [commitments]);
 
-                        assert(pass === true);
+                        ok(pass === true);
                     });
 
                     it('Batched Verification', async () => {
                         const pass = await crypto.check_bulletproof_plus(
                             [proof, proof], [commitments, commitments]);
 
-                        assert(pass === true);
+                        ok(pass === true);
                     });
 
                     it('Big Batch Verification', async () => {
@@ -1059,7 +1060,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                             [proof, proof, proof, proof, proof, proof],
                             [commitments, commitments, commitments, commitments, commitments, commitments]);
 
-                        assert(pass === true);
+                        ok(pass === true);
                     });
 
                     it('Fail Verification', async () => {
@@ -1067,7 +1068,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         const pass = await crypto.check_bulletproof_plus([proof], [fake_commitments]);
 
-                        assert(pass === false);
+                        ok(pass === false);
                     });
                 });
             });
@@ -1092,7 +1093,7 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     const result = await crypto.sha3(INPUT_DATA);
 
-                    assert(result === HASH);
+                    ok(result === HASH);
                 });
             });
         });
