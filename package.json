@@ -31,8 +31,8 @@
     "test:javascript": "cross-env FORCE_JS=1 npm run test:mocha",
     "test:wasm": "cross-env FORCE_WASM=1 npm run test:mocha",
     "test:all": "npm run test && npm run test:wasm && npm run test:javascript",
-    "style": "eslint src/**/*.ts types/**/*.ts test/**/*.ts",
-    "fix-style": "eslint --fix src/**/*.ts types/**/*.ts test/**/*.ts",
+    "style": "eslint src/**/*.ts types/**/*.ts browser/src/**/*.ts test/**/*.ts",
+    "fix-style": "eslint --fix src/**/*.ts types/**/*.ts browser/src/**/*.ts test/**/*.ts",
     "fix:style": "npm run fix-style",
     "install": "npm run prebuild:install && npm run build:conditional:javascript",
     "prepublishOnly": "npm run build:all-modules && npm run test:all"

@@ -12,12 +12,8 @@
     "build": "yarn build:typescript",
     "build:typescript": "./node_modules/.bin/tsc",
     "build:webpack": "./node_modules/.bin/auto-pack",
-    "test": "yarn test:style && yarn test:typecheck",
+    "test": "yarn test:typecheck",
     "test:typecheck": "./node_modules/.bin/tsc --noEmit",
-    "test:style": "yarn style",
-    "style": "./node_modules/.bin/eslint src/**/*.ts",
-    "fix-style": "./node_modules/.bin/eslint --fix src/**/*.ts",
-    "fix:style": "yarn fix-style",
     "prepublishOnly": "yarn build && yarn build:webpack"
   },
   "repository": {
@@ -51,14 +47,6 @@
   "devDependencies": {
     "@gibme/auto-pack": "^0.4.3",
     "@types/node": "^22.4.0",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
-    "eslint": "^8.56.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
