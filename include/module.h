@@ -38,6 +38,11 @@ struct generate_child_key_input final
     {
         LOAD_STRING_FROM_JSON(seed);
 
+        if (has_member(j, "path"))
+        {
+            LOAD_STRING_FROM_JSON(path);
+        }
+
         if (has_member(j, "hmac_key"))
         {
             LOAD_STRING_FROM_JSON(hmac_key);
@@ -79,7 +84,7 @@ struct generate_child_key_input final
         }
     }
 
-    std::string seed;
+    std::string seed, path;
     std::string hmac_key = "ed25519 seed";
     size_t purpose = 0, coin_type = 0, account = 0, change = 0, address_index = 0;
     bool has_purpose = false, has_coin_type = false, has_account = false, has_change = false, has_address_index = false;

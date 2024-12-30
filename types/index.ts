@@ -41,7 +41,7 @@ import {
 } from './types';
 import { LibraryTypeName, is_hex } from './helpers';
 import { uint256 } from './uint64';
-// import { Reader, Writer } from '@gibme/bytepack';
+import { Buffer } from 'buffer';
 
 export * from './types';
 export * from './helpers';
@@ -1753,7 +1753,7 @@ export abstract class CryptoModule {
      * Generates a Hierarchical Deterministic Key Pair using the provided path
      *
      * @param seed
-     * @param purpose
+     * @param purposeOrPath the purpose (numeric) or path (e.g. m/44'/0'/1/3)
      * @param coin_type
      * @param account
      * @param change
@@ -1762,7 +1762,7 @@ export abstract class CryptoModule {
      */
     public async generate_child_key (
         seed: string,
-        purpose?: number,
+        purposeOrPath?: number | string,
         coin_type?: number,
         account?: number,
         change?: number,
@@ -1774,11 +1774,15 @@ export abstract class CryptoModule {
             hmac_key
         };
 
-        if (typeof purpose !== 'undefined') input.purpose = purpose;
-        if (typeof coin_type !== 'undefined') input.coin_type = coin_type;
-        if (typeof account !== 'undefined') input.account = account;
-        if (typeof change !== 'undefined') input.change = change;
-        if (typeof address_index !== 'undefined') input.address_index = address_index;
+        if (typeof purposeOrPath === 'string') {
+            input.path = purposeOrPath.toLowerCase(); // makes sure our m is lowercase
+        } else {
+            if (typeof purposeOrPath !== 'undefined') input.purpose = purposeOrPath;
+            if (typeof coin_type !== 'undefined') input.coin_type = coin_type;
+            if (typeof account !== 'undefined') input.account = account;
+            if (typeof change !== 'undefined') input.change = change;
+            if (typeof address_index !== 'undefined') input.address_index = address_index;
+        }
 
         return this.execute('generate_child_key', input);
     }
@@ -1786,23 +1790,27 @@ export abstract class CryptoModule {
     /**
      * Generates a hardened Hierarchical Deterministic Key path
      *
-     * @param purpose
+     * @param purposeOrPath the purpose (numeric) or path (e.g. m/44'/0'/1/3)
      * @param coin_type
      * @param account
      * @param change
      * @param address_index
      */
     public make_path (
-        purpose?: number,
+        purposeOrPath?: number | string,
         coin_type?: number,
         account?: number,
         change?: number,
         address_index?: number
     ): string {
+        if (typeof purposeOrPath === 'string') {
+            return purposeOrPath.toLowerCase();
+        }
+
         let output = 'm';
 
-        if (typeof purpose !== 'undefined') {
-            output += `/${purpose}'`;
+        if (typeof purposeOrPath !== 'undefined') {
+            output += `/${purposeOrPath}'`;
 
             if (typeof coin_type !== 'undefined') {
                 output += `/${coin_type}'`;

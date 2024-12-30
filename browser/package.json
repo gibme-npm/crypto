@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto-browser",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "description": "Web Browser Lazy-Loading Advanced Cryptographic Functions provided by @gibme/crypto",
   "main": "dist/browser/src/index.js",
   "types": "dist/browser/src/index.d.ts",
@@ -49,5 +49,8 @@
     "@types/node": "^22.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3"
   }
 }

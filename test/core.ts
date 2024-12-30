@@ -42,7 +42,7 @@ export const env_is_set = (variable: any): boolean => {
 };
 
 interface Vector {
-    purpose?: number;
+    purpose?: number | string;
     coin_type?: number;
     account?: number;
     change?: number;
@@ -767,6 +767,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                                     account: 2,
                                     change: 2,
                                     address_index: 1000000000,
+                                    public_key: '3c24da049451555d51a7014a37337aa4e12d41e485abccfa46b47dfb2af54b7a',
+                                    secret_key: '8f94d394a8e8fd6b1bc2f3f49f5c47e385281d5c17e65324b0f62483e37e8793'
+                                },
+                                {
+                                    purpose: 'm/0\'/1\'/2\'/2\'/1000000000\'',
                                     public_key: '3c24da049451555d51a7014a37337aa4e12d41e485abccfa46b47dfb2af54b7a',
                                     secret_key: '8f94d394a8e8fd6b1bc2f3f49f5c47e385281d5c17e65324b0f62483e37e8793'
                                 }

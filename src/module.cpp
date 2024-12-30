@@ -2095,7 +2095,12 @@ MAKE_FUNC(generate_child_key)
 
         crypto_hd_key_t key;
 
-        if (input.has_purpose && input.has_coin_type && input.has_account && input.has_change
+        if (!input.path.empty())
+        {
+            key = seed.generate_child_key(input.path);
+        }
+        else if (
+            input.has_purpose && input.has_coin_type && input.has_account && input.has_change
             && input.has_address_index)
         {
             key = seed.generate_child_key(

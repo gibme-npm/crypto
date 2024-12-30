@@ -309,6 +309,7 @@ export interface ICryptoLibrary {
     aes_decrypt: Library.CallTypes.WithArguments;
     generate_seed: Library.CallTypes.WithArguments;
     generate_child_key: Library.CallTypes.WithArguments;
+    private_key_to_keys: Library.CallTypes.WithArguments;
 
     [key: string]: Library.CallTypes.Signature;
 }

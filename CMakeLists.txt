@@ -18,7 +18,7 @@ message(STATUS "Building for target architecture: ${ARCH}")
 
 set(LIB_MAJOR_VERSION "7")
 set(LIB_MINOR_VERSION "0")
-set(LIB_PATCH_VERSION "0")
+set(LIB_PATCH_VERSION "3")
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
 if(CMAKE_VERSION VERSION_LESS 3.0)
@@ -188,6 +188,7 @@ if(BUILD_JS OR BUILD_WASM)
             -s POLYFILL_OLD_MATH_FUNCTIONS=1
             -s MODULARIZE=1
             -s ASSERTIONS=1
+            -s DYNAMIC_EXECUTION=0
             --bind
     )
 

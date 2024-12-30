@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.ts",
@@ -86,6 +86,7 @@
   },
   "dependencies": {
     "bindings": "^1.5.0",
+    "buffer": "^6.0.3",
     "js-sha3": "^0.9.3",
     "nan": "^2.22.0",
     "prebuild-install": "^7.1.2"
