@@ -152,7 +152,8 @@ export default class Crypto extends CryptoModule {
      */
     private static async load_js_library (): Promise<boolean> {
         if (await this.load_library(
-            `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/crypto-module.js`, LibraryType.JS)) {
+            `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/src/loaders/crypto-module.js`,
+            LibraryType.JS)) {
             return true;
         }
 
@@ -168,7 +169,8 @@ export default class Crypto extends CryptoModule {
      */
     private static async load_wasm_library (): Promise<boolean> {
         if (await this.load_library(
-            `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/crypto-module-wasm.js`, LibraryType.WASM)) {
+            `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/src/loaders/crypto-module-wasm.js`,
+            LibraryType.WASM)) {
             return true;
         }
 

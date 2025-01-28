@@ -30,7 +30,7 @@ const load_module = async (): Promise<ICryptoLibrary | undefined> => {
     try {
         const WASM = await (async () => {
             try {
-                return require('../../dist/crypto-module-wasm.js');
+                return require('./crypto-module-wasm.js');
             } catch {
                 return null;
             }

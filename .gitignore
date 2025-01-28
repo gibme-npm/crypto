@@ -156,3 +156,4 @@ build.js/
 # CMake
 cmake-build*
 docs/
+src/loaders/*.js

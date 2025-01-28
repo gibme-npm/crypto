@@ -25,6 +25,6 @@ fi
 
 mkdir -p ../dist
 emcmake cmake .. -DARCH=default -DBUILD_WASM=1 -DBUILD_JS=0 -DBUILD_NODE=0 -DENGLISH_ONLY=1
-make && cp crypto-module-wasm.js ../dist
+make && cp crypto-module-wasm.js ../src/loaders && cp crypto-module-wasm.js ../dist/src/loaders
 emcmake cmake .. -DARCH=default -DBUILD_WASM=0 -DBUILD_JS=1 -DBUILD_NODE=0 -DENGLISH_ONLY=1
-make && cp crypto-module.js ../dist
+make && cp crypto-module.js ../src/loaders && cp crypto-module.js ../dist/src/loaders

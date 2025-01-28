@@ -57,6 +57,10 @@ jobs:
         run: yarn --ignore-scripts
       - name: Check Package Versions
         run: yarn check:versions
+      - name: Check Typescript Style
+        run: yarn test:style
+      - name: Build Typescript
+        run: yarn ts:build
       - name: Build Node Native Addon
         env:
           CCACHE_DIR: $GITHUB_WORKSPACE/.ccache
@@ -70,10 +74,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: bash
         run: ./build_js.sh
-      - name: Check Typescript Style
-        run: yarn test:style
-      - name: Build Typescript
-        run: yarn ts:build
+      - name: Build Webpack
+        run: yarn webpack:build
       - name: Execute Node C++ Addon Unit Tests
         run: yarn test
       - name: Execute JS Unit Tests

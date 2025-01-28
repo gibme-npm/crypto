@@ -5,9 +5,32 @@
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./wasm": "./dist/src/loaders/wasm.js",
+    "./asm": "./dist/src/loaders/javascript.js",
+    "./node": "./dist/src/loaders/node.js",
+    "./lite": "./dist/types/lite.js"
+  },
+  "typesVersions": {
+    "*": {
+      "wasm": [
+        "./dist/src/loaders/wasm.d.ts"
+      ],
+      "asm": [
+        "./dist/src/loaders/javascript.d.ts"
+      ],
+      "node": [
+        "./dist/src/loaders/node.d.ts"
+      ],
+      "lite": [
+        "./dist/types/lite.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "npm run ts:build",
-    "all:build": "npm run node:build && npm run js:build && npm run ts:build",
+    "all:build": "npm run ts:build && npm run node:build && npm run js:build",
     "docs:build": "typedoc",
     "js:build": "run-script-os",
     "js:build:win32": "build_js.sh",
@@ -17,8 +40,9 @@
     "node:clean": "cmake-js clean",
     "node:rebuild": "npm run node:clean && npm run node:build",
     "node:rebuild:debug": "npm run node:clean && npm run node:build:debug",
-    "js:build:conditional": "test -f .gitsource && npm run js:build || echo \"SKIP JS BUILD: NOT GIT SOURCE\"",
+    "js:build:conditional": "npm run check:source && npm run js:build || echo \"SKIP JS BUILD: NOT GIT SOURCE\"",
     "ts:build": "tsc",
+    "webpack:build": "auto-pack",
     "prebuild": "cross-env BUILD_NODE=1 prebuild --backend cmake-js",
     "prebuild:node": "cross-env BUILD_NODE=1 prebuild --backend cmake-js -t 18.0.0 -t 20.0.0 -t 22.0.0",
     "prebuild:all": "cross-env BUILD_NODE=1 prebuild --backend cmake-js --all",
@@ -38,6 +62,7 @@
     "install": "npm run prebuild:install && npm run js:build:conditional",
     "sync:versions": "node ./scripts/sync_version.js",
     "check:versions": "node ./scripts/check_versions.js",
+    "check:source": "node ./scripts/test_source.js",
     "prepublishOnly": "npm run all:build && npm run test:all"
   },
   "files": [
@@ -63,7 +88,17 @@
     "name": "Brandon Lehmann",
     "email": "brandonlehmann@gmail.com"
   },
+  "webpack": {
+    "entry": {
+      "Crypto": "src/index.ts"
+    },
+    "filename": "[name].min.js",
+    "exclude": {
+      "globalJQuery": true
+    }
+  },
   "devDependencies": {
+    "@gibme/auto-pack": "^0.4.6",
     "@types/bindings": "^1.5.5",
     "@types/mocha": "^10.0.7",
     "@types/node": "^22.10.2",

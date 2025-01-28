@@ -24,30 +24,36 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import type { ICryptoLibrary } from '../../types';
+import { CryptoModule, ICryptoLibrary } from './index';
+export * from './index';
 
-const load_module = async (): Promise<ICryptoLibrary | undefined> => {
-    try {
-        const JS = await (async () => {
-            try {
-                return require('./crypto-module.js');
-            } catch {
-                return null;
-            }
-        })();
+export default class Crypto extends CryptoModule {
+    /**
+     * We cannot create a new instance using this method as we need to await the
+     * loading of an underlying module, hence, we need to await the static
+     * init() method on this class to receive an instance of the class
+     *
+     * @protected
+     */
+    // eslint-disable-next-line no-useless-constructor
+    protected constructor () {
+        super();
+    }
 
-        if (!JS) {
-            return;
-        }
+    /**
+     * Initializes a new instance of this class from an external library source
+     *
+     * Note: this method will attempt to load any other underlying cryptographic
+     * library so it is imperative that the methods you wish to use are
+     * properly supported by the underlying cryptographic library
+     *
+     * @param externalLibrary
+     */
+    public static async init (externalLibrary: Partial<ICryptoLibrary>): Promise<Crypto> {
+        this.external_library = externalLibrary;
 
-        const module = await (new JS()) as ICryptoLibrary;
+        return new Crypto();
+    }
+}
 
-        if (Object.getOwnPropertyNames(module).length === 0 || typeof module.sha3 === 'undefined') {
-            return;
-        }
-
-        return module;
-    } catch {}
-};
-
-export default load_module;
+export { Crypto };
