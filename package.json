@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "7.0.5",
+  "version": "7.0.6",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
@@ -71,7 +71,9 @@
     "scripts/*",
     "src/*",
     "include/*",
-    "CREDITS"
+    "CREDITS",
+    "CMakeLists.txt",
+    "build_js.sh"
   ],
   "engines": {
     "node": ">=18"
