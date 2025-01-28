@@ -1,9 +1,9 @@
 {
   "name": "@gibme/crypto",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
-  "main": "dist/src/index.ts",
+  "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "npm run ts:build",
