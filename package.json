@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "7.0.4",
+  "version": "7.0.5",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
@@ -69,8 +69,6 @@
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
-    "cmake-js": "^7.3.0",
-    "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -79,7 +77,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.7.3",
     "prebuild": "^13.0.1",
-    "run-script-os": "^1.1.6",
     "ts-node": "^10.9.2",
     "typedoc": "^0.26.5",
     "typescript": "^5.7.2"
@@ -87,8 +84,11 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "buffer": "^6.0.3",
+    "cmake-js": "^7.3.0",
+    "cross-env": "^7.0.3",
     "js-sha3": "^0.9.3",
     "nan": "^2.22.0",
-    "prebuild-install": "^7.1.2"
+    "prebuild-install": "^7.1.2",
+    "run-script-os": "^1.1.6"
   }
 }
