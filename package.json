@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
@@ -124,8 +124,8 @@
     "cmake-js": "^7.3.0",
     "cross-env": "^7.0.3",
     "js-sha3": "^0.9.3",
-    "nan": "^2.22.0",
-    "prebuild-install": "^7.1.2",
+    "nan": "^2.22.2",
+    "prebuild-install": "^7.1.3",
     "run-script-os": "^1.1.6"
   }
 }
