@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Brandon Lehmann
+// Copyright (c) 2020-2025, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { describe, it, before } from 'mocha';
+import { before, describe, it } from 'mocha';
 import { run_test } from './core';
 
 run_test(describe, it, before);

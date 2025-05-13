@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Brandon Lehmann
+// Copyright (c) 2020-2025, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -25,35 +25,25 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import {
-    Library,
     crypto_borromean_signature_t,
     crypto_bulletproof_plus_t,
     crypto_bulletproof_t,
     crypto_clsag_signature_t,
     crypto_entropy_t,
     crypto_triptych_signature_t,
-    key_pair_t,
-    Language,
-    ICryptoLibrary,
-    LibraryType,
-    ModuleSettings,
-    ModuleResult
+    key_pair_t
 } from './types';
-import { LibraryTypeName, is_hex } from './helpers';
 import { uint256 } from './uint64';
 import { Buffer } from 'buffer';
 
 export * from './types';
-export * from './helpers';
 
 /**
  * @ignore
  */
 export abstract class CryptoModule {
-    private static _external_library: Partial<ICryptoLibrary> = {};
-    protected static runtime_configuration: ModuleSettings = {
-        type: LibraryType.UNKNOWN
-    };
+    // eslint-disable-next-line no-use-before-define
+    protected static runtime_configuration: CryptoModule.Settings = { type: 0 };
 
     /**
      * We cannot create a new instance using this method as we need to await the
@@ -63,12 +53,16 @@ export abstract class CryptoModule {
      * @protected
      */
     // eslint-disable-next-line no-useless-constructor
-    protected constructor () {}
+    protected constructor () {
+    }
+
+    // eslint-disable-next-line no-use-before-define
+    private static _external_library: Partial<CryptoModule.Interface> = {};
 
     /**
      * Gets the external library calls that replace our cryptographic method calls
      */
-    public static get external_library (): Partial<ICryptoLibrary> {
+    public static get external_library (): Partial<CryptoModule.Interface> {
         return this._external_library;
     }
 
@@ -77,23 +71,32 @@ export abstract class CryptoModule {
      *
      * @param config
      */
-    public static set external_library (config: Partial<ICryptoLibrary>) {
+    public static set external_library (config: Partial<CryptoModule.Interface>) {
         for (const key of Object.keys(config)) {
             this._external_library[key] = config[key];
         }
     }
 
     /**
+     * Sets external library calls that replace our cryptographic method calls
+     *
+     * @param config
+     */
+    public set external_library (config: Partial<CryptoModule.Interface>) {
+        CryptoModule.external_library = config;
+    }
+
+    /**
      * Returns the underlying cryptographic library name
      */
     public static get library_name (): string {
-        return LibraryTypeName(this.runtime_configuration.type);
+        return CryptoModule.typeToString(this.runtime_configuration.type);
     }
 
     /**
      * Returns the underlying cryptographic library type
      */
-    public static get library_type (): LibraryType {
+    public static get library_type (): CryptoModule.Type {
         return this.runtime_configuration.type;
     }
 
@@ -102,22 +105,13 @@ export abstract class CryptoModule {
      * Node.js C++ Addon type
      */
     public static get is_native (): boolean {
-        return this.runtime_configuration.type === LibraryType.NODE;
-    }
-
-    /**
-     * Sets external library calls that replace our cryptographic method calls
-     *
-     * @param config
-     */
-    public set external_library (config: Partial<ICryptoLibrary>) {
-        CryptoModule.external_library = config;
+        return this.runtime_configuration.type === CryptoModule.Type.NODE;
     }
 
     /**
      * Gets the external library calls that replace our cryptographic method calls
      */
-    public get external_library (): Partial<ICryptoLibrary> {
+    public get external_library (): Partial<CryptoModule.Interface> {
         return CryptoModule.external_library;
     }
 
@@ -131,7 +125,7 @@ export abstract class CryptoModule {
     /**
      * Returns the underlying cryptographic library type
      */
-    public get library_type (): LibraryType {
+    public get library_type (): CryptoModule.Type {
         return CryptoModule.library_type;
     }
 
@@ -141,6 +135,104 @@ export abstract class CryptoModule {
      */
     public get is_native (): boolean {
         return CryptoModule.is_native;
+    }
+
+    /**
+     * Tests if the supplied string is of hexadecimal form
+     *
+     * @param value
+     * @ignore
+     */
+    public static is_hex (value: string): boolean {
+        return /^[0-9a-f]+$/i.test(value);
+    }
+
+    /**
+     * Constructs a Module Result
+     *
+     * Note: This is typically only used by external cryptographic library calls
+     * so that it mimics our underlying library call results
+     *
+     * The string returned should always be a raw type, whether it be
+     * a string, a number, or an object as expected by the module.
+     *
+     * If you are using external libraries for the underlying cryptographic library,
+     * it is highly recommended that you read the source code of this module
+     * to make sure that you are returning a result of the proper structure.
+     *
+     * This method will `JSON.stringify()` whatever result you supply so that our
+     * module understands it within it's private `execute()` method
+     *
+     * @param error
+     * @param result
+     * @param error_message
+     */
+    public static make_module_result<ResultType = string> (
+        error: boolean,
+        result: ResultType,
+        error_message?: string
+    ): string {
+        const output: CryptoModule.Call.Result<ResultType> = {
+            error,
+            result
+        };
+
+        if (error_message) {
+            output.error_message = error_message;
+        }
+
+        return JSON.stringify(output);
+    }
+
+    /**
+     * Returns the common lanague name for the specified language
+     *
+     * @param language
+     */
+    public static languageToString (language: CryptoModule.Language): string {
+        switch (language) {
+            case CryptoModule.Language.CHINESE_SIMPLIFIED:
+                return 'Chinese (simplified)';
+            case CryptoModule.Language.CHINESE_TRADITIONAL:
+                return 'Chinese (traditional)';
+            case CryptoModule.Language.CZECH:
+                return 'Czech';
+            case CryptoModule.Language.ENGLISH:
+                return 'English';
+            case CryptoModule.Language.FRENCH:
+                return 'French';
+            case CryptoModule.Language.ITALIAN:
+                return 'Italian';
+            case CryptoModule.Language.JAPANESE:
+                return 'Japanese';
+            case CryptoModule.Language.KOREAN:
+                return 'Korean';
+            case CryptoModule.Language.PORTUGUESE:
+                return 'Portuguese';
+            case CryptoModule.Language.SPANISH:
+                return 'Spanish';
+            default:
+                return 'Unknown';
+        }
+    }
+
+    /**
+     * Returns the library name from the specified library type
+     *
+     * @param type
+     * @protected
+     */
+    protected static typeToString (type: CryptoModule.Type): string {
+        switch (type) {
+            case CryptoModule.Type.NODE:
+                return 'Node C++ Addon';
+            case CryptoModule.Type.WASM:
+                return 'WASM.js Library';
+            case CryptoModule.Type.JS:
+                return 'Javascript asm.js (slow)';
+            default:
+                return 'unknown';
+        }
     }
 
     /**
@@ -474,7 +566,7 @@ export abstract class CryptoModule {
      */
     public async entropy_recover (
         mnenomic_phrase: string | string[],
-        language: Language = Language.ENGLISH
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
     ): Promise<crypto_entropy_t> {
         if (Array.isArray(mnenomic_phrase)) {
             mnenomic_phrase = mnenomic_phrase.join(' ');
@@ -824,7 +916,7 @@ export abstract class CryptoModule {
             message_digest,
             secret_ephemeral,
             public_keys
-        } as Library.GenerateRingSignature);
+        } as CryptoModule.External.GenerateRingSignature);
     }
 
     /**
@@ -847,7 +939,7 @@ export abstract class CryptoModule {
             key_image,
             public_keys,
             real_output_index
-        } as Library.GenerateRingSignature);
+        } as CryptoModule.External.GenerateRingSignature);
     }
 
     /**
@@ -866,7 +958,7 @@ export abstract class CryptoModule {
             secret_ephemeral,
             real_output_index,
             signature
-        } as Library.GenerateRingSignature<crypto_borromean_signature_t>);
+        } as CryptoModule.External.GenerateRingSignature<crypto_borromean_signature_t>);
     }
 
     /**
@@ -890,7 +982,7 @@ export abstract class CryptoModule {
                 key_image,
                 public_keys,
                 signature
-            } as Library.CheckRingSignature<crypto_borromean_signature_t>);
+            } as CryptoModule.External.CheckRingSignature<crypto_borromean_signature_t>);
 
             return true;
         } catch {
@@ -923,7 +1015,7 @@ export abstract class CryptoModule {
         pseudo_blinding_factor?: string,
         pseudo_commitment?: string
     ): Promise<crypto_clsag_signature_t> {
-        const options: Library.GenerateRingSignature = {
+        const options: CryptoModule.External.GenerateRingSignature = {
             message_digest,
             secret_ephemeral,
             public_keys
@@ -972,7 +1064,7 @@ export abstract class CryptoModule {
         pseudo_blinding_factor?: string,
         pseudo_commitment?: string
     ): Promise<{ signature: crypto_clsag_signature_t, h: string[], mu_P: string }> {
-        const options: Library.GenerateRingSignature = {
+        const options: CryptoModule.External.GenerateRingSignature = {
             message_digest,
             key_image,
             public_keys,
@@ -1020,7 +1112,7 @@ export abstract class CryptoModule {
             signature,
             h,
             mu_P
-        } as Library.GenerateRingSignature<crypto_clsag_signature_t>);
+        } as CryptoModule.External.GenerateRingSignature<crypto_clsag_signature_t>);
     }
 
     /**
@@ -1041,7 +1133,7 @@ export abstract class CryptoModule {
         commitments?: string[]
     ): Promise<boolean> {
         try {
-            const options: Library.CheckRingSignature<crypto_clsag_signature_t> = {
+            const options: CryptoModule.External.CheckRingSignature<crypto_clsag_signature_t> = {
                 message_digest,
                 key_image,
                 public_keys,
@@ -1085,7 +1177,7 @@ export abstract class CryptoModule {
         pseudo_blinding_factor: string,
         pseudo_commitment: string
     ): Promise<crypto_triptych_signature_t> {
-        const options: Library.GenerateRingSignature = {
+        const options: CryptoModule.External.GenerateRingSignature = {
             message_digest,
             secret_ephemeral,
             public_keys
@@ -1134,7 +1226,7 @@ export abstract class CryptoModule {
         pseudo_blinding_factor: string,
         pseudo_commitment: string
     ): Promise<{ signature: crypto_triptych_signature_t, xpow: string }> {
-        const options: Library.GenerateRingSignature = {
+        const options: CryptoModule.External.GenerateRingSignature = {
             message_digest,
             key_image,
             public_keys,
@@ -1176,7 +1268,7 @@ export abstract class CryptoModule {
             secret_ephemeral,
             signature,
             xpow
-        } as Library.GenerateRingSignature<crypto_triptych_signature_t>);
+        } as CryptoModule.External.GenerateRingSignature<crypto_triptych_signature_t>);
     }
 
     /**
@@ -1197,7 +1289,7 @@ export abstract class CryptoModule {
         commitments: string[]
     ): Promise<boolean> {
         try {
-            const options: Library.CheckRingSignature<crypto_triptych_signature_t> = {
+            const options: CryptoModule.External.CheckRingSignature<crypto_triptych_signature_t> = {
                 message_digest,
                 key_image,
                 public_keys,
@@ -1461,7 +1553,7 @@ export abstract class CryptoModule {
      */
     public async base58_encode (value: string | Buffer): Promise<string> {
         if (typeof value === 'string') {
-            value = Buffer.from(value, is_hex(value) ? 'hex' : undefined);
+            value = Buffer.from(value, CryptoModule.is_hex(value) ? 'hex' : undefined);
         }
 
         return this.execute('base58_encode', value.toString('hex'));
@@ -1474,7 +1566,7 @@ export abstract class CryptoModule {
      */
     public async base58_encode_check (value: string | Buffer): Promise<string> {
         if (typeof value === 'string') {
-            value = Buffer.from(value, is_hex(value) ? 'hex' : undefined);
+            value = Buffer.from(value, CryptoModule.is_hex(value) ? 'hex' : undefined);
         }
 
         return this.execute('base58_encode_check', value.toString('hex'));
@@ -1508,7 +1600,7 @@ export abstract class CryptoModule {
      */
     public async cn_base58_encode (value: string | Buffer): Promise<string> {
         if (typeof value === 'string') {
-            value = Buffer.from(value, is_hex(value) ? 'hex' : undefined);
+            value = Buffer.from(value, CryptoModule.is_hex(value) ? 'hex' : undefined);
         }
 
         return this.execute('cn_base58_encode', value.toString('hex'));
@@ -1521,7 +1613,7 @@ export abstract class CryptoModule {
      */
     public async cn_base58_encode_check (value: string | Buffer): Promise<string> {
         if (typeof value === 'string') {
-            value = Buffer.from(value, is_hex(value) ? 'hex' : undefined);
+            value = Buffer.from(value, CryptoModule.is_hex(value) ? 'hex' : undefined);
         }
 
         return this.execute('cn_base58_encode_check', value.toString('hex'));
@@ -1595,9 +1687,12 @@ export abstract class CryptoModule {
      */
     public async mnemonics_encode (
         entropy: string,
-        language: Language = Language.ENGLISH
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
     ): Promise<string[]> {
-        const result = await this.execute('mnemonics_encode', { entropy, language });
+        const result = await this.execute('mnemonics_encode', {
+            entropy,
+            language
+        });
 
         return result.split(' ');
     }
@@ -1610,7 +1705,7 @@ export abstract class CryptoModule {
      */
     public async mnemonics_decode (
         mnemonic: string | string[],
-        language: Language = Language.ENGLISH
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
     ): Promise<crypto_entropy_t> {
         if (Array.isArray(mnemonic)) {
             mnemonic = mnemonic.join(' ');
@@ -1630,7 +1725,7 @@ export abstract class CryptoModule {
      */
     public async mnemonics_word_index (
         word: string,
-        language: Language = Language.ENGLISH
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
     ): Promise<number> {
         return this.execute('mnemonics_word_index', {
             input: word,
@@ -1643,7 +1738,9 @@ export abstract class CryptoModule {
      *
      * @param language
      */
-    public async word_list (language: Language = Language.ENGLISH): Promise<string[]> {
+    public async word_list (
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
+    ): Promise<string[]> {
         const result = await this.execute('word_list', {
             language
         });
@@ -1657,7 +1754,9 @@ export abstract class CryptoModule {
      *
      * @param language
      */
-    public async word_list_trimmed (language: Language = Language.ENGLISH): Promise<string[]> {
+    public async word_list_trimmed (
+        language: CryptoModule.Language = CryptoModule.Language.ENGLISH
+    ): Promise<string[]> {
         const result = await this.execute('word_list_trimmed', {
             language
         });
@@ -1690,7 +1789,7 @@ export abstract class CryptoModule {
             (input as string) = JSON.stringify(input);
         }
 
-        const options: Library.AES = {
+        const options: CryptoModule.External.AES = {
             input: (input as string),
             password
         };
@@ -1714,7 +1813,7 @@ export abstract class CryptoModule {
         password: string,
         iterations?: number
     ): Promise<OutputType> {
-        const options: Library.AES = {
+        const options: CryptoModule.External.AES = {
             input,
             password
         };
@@ -1729,7 +1828,7 @@ export abstract class CryptoModule {
     /**
      * Returns a list of the supported languages
      */
-    public async languages (): Promise<Language[]> {
+    public async languages (): Promise<CryptoModule.Language[]> {
         return this.execute('languages');
     }
 
@@ -1843,7 +1942,7 @@ export abstract class CryptoModule {
         method: string,
         argument?: ArgumentType
     ): Promise<ResultType> {
-        const method_call: Library.CallTypes.Signature | undefined = (() => {
+        const method_call: CryptoModule.Call.Signature | undefined = (() => {
             if (typeof this.external_library[method] !== 'undefined') {
                 return this.external_library[method];
             }
@@ -1866,12 +1965,12 @@ export abstract class CryptoModule {
         let result: string;
 
         if (argument) {
-            result = await (method_call as Library.CallTypes.WithArguments)(JSON.stringify(argument));
+            result = await (method_call as CryptoModule.Call.WithArguments)(JSON.stringify(argument));
         } else {
-            result = await (method_call as Library.CallTypes.WithoutArguments)();
+            result = await (method_call as CryptoModule.Call.WithoutArguments)();
         }
 
-        const json: ModuleResult<ResultType> = JSON.parse(result);
+        const json: CryptoModule.Call.Result<ResultType> = JSON.parse(result);
 
         if (json.error) {
             throw new Error(json.error_message ??
@@ -1881,3 +1980,201 @@ export abstract class CryptoModule {
         return json.result;
     }
 }
+
+export namespace CryptoModule {
+    /**
+     * The type of the underlying cryptographic library
+     */
+    export enum Type {
+        UNKNOWN,
+        NODE,
+        WASM,
+        JS
+    }
+
+    /**
+     * The type of the mnemonic phrase language
+     *
+     * Note: You will want to call the module `languages()` to get
+     * the list of languages supported by the underlying cryptographic
+     * module before attempting to use a particular language
+     */
+    export enum Language {
+        CHINESE_SIMPLIFIED,
+        CHINESE_TRADITIONAL,
+        CZECH,
+        ENGLISH,
+        FRENCH,
+        ITALIAN,
+        JAPANESE,
+        KOREAN,
+        PORTUGUESE,
+        SPANISH
+    }
+
+    export namespace External {
+
+        /**
+         * Defines the structure for when we interact with the generation of ring
+         * signatures using our underlying cryptographic library
+         */
+        export type GenerateRingSignature<SignatureType = any> = {
+            message_digest?: string;
+            secret_ephemeral?: string;
+            public_keys?: string[];
+            input_blinding_factor?: string;
+            public_commitments?: string[];
+            pseudo_blinding_factor?: string;
+            pseudo_commitment?: string;
+            real_output_index?: number;
+            key_image?: string;
+            signature?: SignatureType;
+            h?: string[];
+            mu_P?: string;
+            xpow?: string;
+        }
+
+        /**
+         * Defines the structure for when we interact with the AES methods
+         * in our underlying cryptographic library
+         */
+        export type AES = {
+            input: string;
+            password: string;
+            iterations?: number;
+        }
+
+        /**
+         * Defines the structure for when we interact with the checking of ring
+         * signatures using our underlying cryptographic library
+         */
+        export type CheckRingSignature<SignatureType> = {
+            message_digest: string;
+            key_image: string;
+            public_keys: string[];
+            signature: SignatureType;
+            commitments?: string[];
+        }
+    }
+
+    /**
+     * Defines the Call types going into our underlying cryptographic library
+     */
+    export namespace Call {
+        export type WithArguments = (input: string) => Promise<string>;
+
+        export type WithoutArguments = () => Promise<string>;
+
+        export type Signature = WithArguments | WithoutArguments;
+
+        /**
+         * @ignore
+         */
+        export type Result<Type> = {
+            error: boolean;
+            result: Type;
+            error_message?: string;
+        }
+    }
+
+    /**
+     * Defines the interface uses with our underlying cryptographic library
+     * or an externally provided library
+     */
+    export type Interface = {
+        random_entropy: Call.WithoutArguments;
+        random_hash: Call.WithoutArguments;
+        random_hashes: Call.WithArguments;
+        random_scalar: Call.WithoutArguments;
+        random_scalars: Call.WithArguments;
+        random_point: Call.WithoutArguments;
+        random_points: Call.WithArguments;
+        sha3: Call.WithArguments;
+        sha3_slow: Call.WithArguments;
+        argon2i: Call.WithArguments;
+        argon2d: Call.WithArguments;
+        argon2id: Call.WithArguments;
+        entropy_recover: Call.WithArguments;
+        generate_derivation: Call.WithArguments;
+        generate_derivation_scalar: Call.WithArguments;
+        derive_public_key: Call.WithArguments;
+        derive_secret_key: Call.WithArguments;
+        generate_key_image: Call.WithArguments;
+        generate_key_image_v2: Call.WithArguments;
+        generate_keys: Call.WithoutArguments;
+        underive_public_key: Call.WithArguments;
+        secret_key_to_public_key: Call.WithArguments;
+        hash_to_point: Call.WithArguments;
+        hash_to_scalar: Call.WithArguments;
+        scalar_reduce: Call.WithArguments;
+        tree_depth: Call.WithArguments;
+        root_hash: Call.WithArguments;
+        root_hash_from_branch: Call.WithArguments;
+        tree_branch: Call.WithArguments;
+        generate_signature: Call.WithArguments;
+        prepare_signature: Call.WithArguments;
+        complete_signature: Call.WithArguments;
+        check_signature: Call.WithArguments;
+        generate_borromean_signature: Call.WithArguments;
+        prepare_borromean_signature: Call.WithArguments;
+        complete_borromean_signature: Call.WithArguments;
+        check_borromean_signature: Call.WithArguments;
+        generate_clsag_signature: Call.WithArguments;
+        prepare_clsag_signature: Call.WithArguments;
+        complete_clsag_signature: Call.WithArguments;
+        check_clsag_signature: Call.WithArguments;
+        generate_triptych_signature: Call.WithArguments;
+        prepare_triptych_signature: Call.WithArguments;
+        complete_triptych_signature: Call.WithArguments;
+        check_triptych_signature: Call.WithArguments;
+        generate_bulletproof: Call.WithArguments;
+        check_bulletproof: Call.WithArguments;
+        check_bulletproof_batch: Call.WithArguments;
+        generate_bulletproof_plus: Call.WithArguments;
+        check_bulletproof_plus: Call.WithArguments;
+        check_bulletproof_plus_batch: Call.WithArguments;
+        check_commitment_parity: Call.WithArguments;
+        generate_amount_mask: Call.WithArguments;
+        generate_commitment_blinding_factor: Call.WithArguments;
+        generate_pedersen_commitment: Call.WithArguments;
+        generate_pseudo_commitments: Call.WithArguments;
+        toggle_masked_amount: Call.WithArguments;
+        base58_address_decode: Call.WithArguments;
+        cn_base58_address_decode: Call.WithArguments;
+        generate_outputs_proof: Call.WithArguments;
+        check_outputs_proof: Call.WithArguments;
+        base58_encode: Call.WithArguments;
+        base58_encode_check: Call.WithArguments;
+        base58_decode: Call.WithArguments;
+        base58_decode_check: Call.WithArguments;
+        cn_base58_encode: Call.WithArguments;
+        cn_base58_encode_check: Call.WithArguments;
+        cn_base58_decode: Call.WithArguments;
+        cn_base58_decode_check: Call.WithArguments;
+        check_scalar: Call.WithArguments;
+        check_point: Call.WithArguments;
+        generate_keys_m: Call.WithArguments;
+        mnemonics_encode: Call.WithArguments;
+        mnemonics_decode: Call.WithArguments;
+        mnemonics_calculate_checksum_index: Call.WithArguments;
+        mnemonics_word_index: Call.WithArguments;
+        word_list: Call.WithoutArguments;
+        word_list_trimmed: Call.WithoutArguments;
+        calculate_base2_exponent: Call.WithArguments;
+        aes_encrypt: Call.WithArguments;
+        aes_decrypt: Call.WithArguments;
+        generate_seed: Call.WithArguments;
+        generate_child_key: Call.WithArguments;
+        private_key_to_keys: Call.WithArguments;
+
+        [key: string]: Call.Signature;
+    }
+
+    /** @ignore */
+    export type Settings = {
+        library?: Interface;
+        type: Type;
+    }
+}
+
+export default CryptoModule;

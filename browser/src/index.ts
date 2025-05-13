@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Brandon Lehmann
+// Copyright (c) 2020-2025, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,13 +24,14 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { CryptoModule, ICryptoLibrary, LibraryType } from '../../types';
+import { CryptoModule } from '../../types';
 import { version } from './version';
+
 export * from '../../types';
 
 declare global {
     interface Window {
-        CryptoModule?: ICryptoLibrary;
+        CryptoModule?: CryptoModule.Interface;
     }
 }
 
@@ -52,7 +53,7 @@ export default class Crypto extends CryptoModule {
      * the underlying cryptographic library in the order the fastest
      * running library to the slowest
      */
-    public static async init (externalLibrary: Partial<ICryptoLibrary> = {}): Promise<Crypto> {
+    public static async init (externalLibrary: Partial<CryptoModule.Interface> = {}): Promise<Crypto> {
         this.external_library = externalLibrary;
 
         if (!this.runtime_configuration.library) {
@@ -121,7 +122,7 @@ export default class Crypto extends CryptoModule {
      * @param type
      * @private
      */
-    private static async load_library (url: string, type: LibraryType): Promise<boolean> {
+    private static async load_library (url: string, type: CryptoModule.Type): Promise<boolean> {
         if (!await this.load(url)) {
             return false;
         }
@@ -130,7 +131,7 @@ export default class Crypto extends CryptoModule {
             return false;
         }
 
-        const module = await (new (window.CryptoModule as any)()) as ICryptoLibrary;
+        const module = await (new (window.CryptoModule as any)()) as CryptoModule.Interface;
 
         if (Object.getOwnPropertyNames(module).length === 0 || typeof module.sha3 === 'undefined') {
             return false;
@@ -153,12 +154,12 @@ export default class Crypto extends CryptoModule {
     private static async load_js_library (): Promise<boolean> {
         if (await this.load_library(
             `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/src/loaders/crypto-module.js`,
-            LibraryType.JS)) {
+            CryptoModule.Type.JS)) {
             return true;
         }
 
         // this is a fallback
-        return this.load_library('https://testmodule.pages.dev/crypto-module.js', LibraryType.JS);
+        return this.load_library('https://testmodule.pages.dev/crypto-module.js', CryptoModule.Type.JS);
     }
 
     /**
@@ -170,12 +171,12 @@ export default class Crypto extends CryptoModule {
     private static async load_wasm_library (): Promise<boolean> {
         if (await this.load_library(
             `https://cdn.jsdelivr.net/npm/@gibme/crypto@${version}/dist/src/loaders/crypto-module-wasm.js`,
-            LibraryType.WASM)) {
+            CryptoModule.Type.WASM)) {
             return true;
         }
 
         // this is a fallback
-        return this.load_library('https://testmodule.pages.dev/crypto-module-wasm.js', LibraryType.WASM);
+        return this.load_library('https://testmodule.pages.dev/crypto-module-wasm.js', CryptoModule.Type.WASM);
     }
 
     /**

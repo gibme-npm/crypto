@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Brandon Lehmann
+// Copyright (c) 2020-2025, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { CryptoModule, ICryptoLibrary, LibraryType } from '../types';
+import { CryptoModule } from '../types';
 export * from '../types';
 
 export default class Crypto extends CryptoModule {
@@ -48,7 +48,7 @@ export default class Crypto extends CryptoModule {
      * @param externalLibrary
      */
     public static async init (
-        externalLibrary: Partial<ICryptoLibrary> = {}
+        externalLibrary: Partial<CryptoModule.Interface> = {}
     ): Promise<Crypto> {
         this.external_library = externalLibrary;
 
@@ -104,7 +104,7 @@ export default class Crypto extends CryptoModule {
 
         if (module) {
             CryptoModule.runtime_configuration = {
-                type: LibraryType.NODE,
+                type: CryptoModule.Type.NODE,
                 library: module
             };
 
@@ -131,7 +131,7 @@ export default class Crypto extends CryptoModule {
 
         if (module) {
             CryptoModule.runtime_configuration = {
-                type: LibraryType.JS,
+                type: CryptoModule.Type.JS,
                 library: module
             };
 
@@ -158,7 +158,7 @@ export default class Crypto extends CryptoModule {
 
         if (module) {
             CryptoModule.runtime_configuration = {
-                type: LibraryType.WASM,
+                type: CryptoModule.Type.WASM,
                 library: module
             };
 

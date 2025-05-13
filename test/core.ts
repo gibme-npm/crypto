@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Brandon Lehmann
+// Copyright (c) 2020-2025, Brandon Lehmann
 //
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
@@ -24,16 +24,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Crypto, {
-    crypto_bulletproof_plus_t,
-    crypto_bulletproof_t,
-    crypto_entropy_t,
-    make_module_result,
-    is_hex,
-    Language,
-    LibraryType
-} from '../src';
-import { equal, deepEqual, notEqual, ok, fail } from 'assert';
+import Crypto, { crypto_bulletproof_plus_t, crypto_bulletproof_t, crypto_entropy_t, CryptoModule } from '../src';
+import { deepEqual, equal, fail, notEqual, ok } from 'assert';
 import { sha3_256 } from 'js-sha3';
 
 /** @ignore */
@@ -67,7 +59,7 @@ export const run_test = (describe: any, it: any, before: any) => {
                 process.exit(1);
             }
 
-            if (Crypto.library_type !== LibraryType.JS) {
+            if (Crypto.library_type !== CryptoModule.Type.JS) {
                 console.log('Could not activate Javascript Cryptographic Library');
 
                 process.exit(1);
@@ -79,14 +71,14 @@ export const run_test = (describe: any, it: any, before: any) => {
                 process.exit(1);
             }
 
-            if (Crypto.library_type !== LibraryType.WASM) {
+            if (Crypto.library_type !== CryptoModule.Type.WASM) {
                 console.log('Could not activate WASM Cryptographic Library');
 
                 process.exit(1);
             }
         }
 
-        let languages: Language[] = [];
+        let languages: CryptoModule.Language[] = [];
 
         before(async () => {
             languages = await crypto.languages();
@@ -246,7 +238,8 @@ export const run_test = (describe: any, it: any, before: any) => {
                         await crypto.base58_decode_check(encoded);
 
                         fail();
-                    } catch {}
+                    } catch {
+                    }
                 });
 
                 it('Encode Check', async () => {
@@ -264,7 +257,8 @@ export const run_test = (describe: any, it: any, before: any) => {
                         await crypto.base58_decode(encoded);
 
                         fail();
-                    } catch {}
+                    } catch {
+                    }
                 });
             });
 
@@ -286,7 +280,8 @@ export const run_test = (describe: any, it: any, before: any) => {
                         await crypto.cn_base58_decode_check(encoded);
 
                         fail();
-                    } catch {}
+                    } catch {
+                    }
                 });
 
                 it('Encode Check', async () => {
@@ -304,7 +299,8 @@ export const run_test = (describe: any, it: any, before: any) => {
                         await crypto.cn_base58_decode(encoded);
 
                         fail();
-                    } catch {}
+                    } catch {
+                    }
                 });
             });
 
@@ -529,14 +525,20 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Generate Random Keys', async () => {
-                    const { public_key, secret_key } = await crypto.generate_keys();
+                    const {
+                        public_key,
+                        secret_key
+                    } = await crypto.generate_keys();
 
                     ok(await crypto.check_point(public_key), `PK: ${public_key}`);
                     ok(await crypto.check_scalar(secret_key), `SK: ${secret_key}`);
                 });
 
                 it('Generate Sets of Random Keys', async () => {
-                    const { public_keys, secret_keys } = await crypto.generate_keys_m(10);
+                    const {
+                        public_keys,
+                        secret_keys
+                    } = await crypto.generate_keys_m(10);
 
                     const test = async (pub: string, sec: string): Promise<boolean> => {
                         return await crypto.check_point(pub) &&
@@ -554,7 +556,10 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Secret Key to Public Key', async () => {
-                    const { public_key, secret_key } = await crypto.generate_keys();
+                    const {
+                        public_key,
+                        secret_key
+                    } = await crypto.generate_keys();
 
                     const public_key2 = await crypto.secret_key_to_public_key(secret_key);
 
@@ -562,7 +567,10 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Private Key to Keys', async () => {
-                    const { public_key, secret_key } = await crypto.private_key_to_keys(
+                    const {
+                        public_key,
+                        secret_key
+                    } = await crypto.private_key_to_keys(
                         'd9576da853288ca0b690e4d8f37ef7b9f62883cb83e6ddaca4ad4a75897caa49');
 
                     equal(public_key, '900bc03f0692023f66251f3997476251c09a30f791a06c1a7c689355d37068f4');
@@ -570,7 +578,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Generate Seed', async () => {
-                    const { entropy, timestamp, mnemonic_phrase } = await crypto.random_entropy();
+                    const {
+                        entropy,
+                        timestamp,
+                        mnemonic_phrase
+                    } = await crypto.random_entropy();
 
                     const words = mnemonic_phrase.split(' ');
 
@@ -584,7 +596,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Generate With Entropy', async () => {
-                    const { entropy, timestamp, mnemonic_phrase } = await crypto.random_entropy(
+                    const {
+                        entropy,
+                        timestamp,
+                        mnemonic_phrase
+                    } = await crypto.random_entropy(
                         (new Date()).toString());
 
                     const words = mnemonic_phrase.split(' ');
@@ -599,7 +615,10 @@ export const run_test = (describe: any, it: any, before: any) => {
                 });
 
                 it('Restore Seed', async () => {
-                    const { entropy, timestamp } = await crypto.entropy_recover(m_words);
+                    const {
+                        entropy,
+                        timestamp
+                    } = await crypto.entropy_recover(m_words);
 
                     equal(entropy, m_entropy);
                     equal(timestamp, m_timestamp);
@@ -942,7 +961,10 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                     public_commitments[REAL_OUTPUT_INDEX] = input_commitment;
 
-                    const { blinding_factors, commitments } =
+                    const {
+                        blinding_factors,
+                        commitments
+                    } =
                         await crypto.generate_pseudo_commitments([100],
                             await crypto.random_scalars(1));
 
@@ -1012,7 +1034,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                     });
 
                     it('Prepare Ring Signature', async () => {
-                        const { signature, h, mu_P } = await crypto.prepare_clsag_signature(
+                        const {
+                            signature,
+                            h,
+                            mu_P
+                        } = await crypto.prepare_clsag_signature(
                             message_digest,
                             key_image,
                             public_keys,
@@ -1063,7 +1089,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                     });
 
                     it('Prepare Ring Signature', async () => {
-                        const { signature, h, mu_P } = await crypto.prepare_clsag_signature(
+                        const {
+                            signature,
+                            h,
+                            mu_P
+                        } = await crypto.prepare_clsag_signature(
                             message_digest,
                             key_image,
                             public_keys,
@@ -1120,7 +1150,10 @@ export const run_test = (describe: any, it: any, before: any) => {
                     });
 
                     it('Prepare Ring Signature', async () => {
-                        const { signature, xpow } = await crypto.prepare_triptych_signature(
+                        const {
+                            signature,
+                            xpow
+                        } = await crypto.prepare_triptych_signature(
                             message_digest,
                             key_image2,
                             public_keys,
@@ -1300,11 +1333,11 @@ export const run_test = (describe: any, it: any, before: any) => {
                 const sha3 = async (input: string): Promise<string> => {
                     try {
                         input = JSON.parse(input);
-                        const hash = sha3_256(Buffer.from(input, is_hex(input) ? 'hex' : undefined));
+                        const hash = sha3_256(Buffer.from(input, Crypto.is_hex(input) ? 'hex' : undefined));
 
-                        return make_module_result(false, hash);
+                        return Crypto.make_module_result(false, hash);
                     } catch (error: any) {
-                        return make_module_result(true, undefined, 'External call failure');
+                        return Crypto.make_module_result(true, undefined, 'External call failure');
                     }
                 };
 
