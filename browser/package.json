@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto-browser",
-  "version": "8.0.0",
+  "version": "20.0.0",
   "description": "Web Browser Lazy-Loading Advanced Cryptographic Functions provided by @gibme/crypto",
   "main": "dist/browser/src/index.js",
   "types": "dist/browser/src/index.d.ts",
@@ -36,7 +36,7 @@
     "url": "https://github.com/gibme-npm/crypto/issues"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "engineStrict": true,
   "author": {
@@ -56,10 +56,10 @@
     }
   },
   "devDependencies": {
-    "@gibme/auto-pack": "^0.4.7",
-    "@types/node": "^22.15.17",
+    "@gibme/auto-pack": "^20.0.0",
+    "@types/node": "^24.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "buffer": "^6.0.3"

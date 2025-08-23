@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "8.0.0",
+  "version": "20.0.0",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
@@ -76,7 +76,7 @@
     "build_js.sh"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "engineStrict": true,
   "repository": {
@@ -100,10 +100,10 @@
     }
   },
   "devDependencies": {
-    "@gibme/auto-pack": "^0.4.7",
+    "@gibme/auto-pack": "^20.0.0",
     "@types/bindings": "^1.5.5",
-    "@types/mocha": "^10.0.7",
-    "@types/node": "^22.15.17",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
@@ -112,19 +112,19 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.7.3",
+    "mocha": "^11.7.1",
     "prebuild": "^13.0.1",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "bindings": "^1.5.0",
     "buffer": "^6.0.3",
     "cmake-js": "^7.3.1",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.0.0",
     "js-sha3": "^0.9.3",
-    "nan": "^2.22.2",
+    "nan": "^2.23.0",
     "prebuild-install": "^7.1.3",
     "run-script-os": "^1.1.6"
   }
