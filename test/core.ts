@@ -1337,7 +1337,8 @@ export const run_test = (describe: any, it: any, before: any) => {
 
                         return Crypto.make_module_result(false, hash);
                     } catch (error: any) {
-                        return Crypto.make_module_result(true, undefined, 'External call failure');
+                        return Crypto.make_module_result(true, undefined,
+                            `External call failure: ${error.toString()}`);
                     }
                 };
 

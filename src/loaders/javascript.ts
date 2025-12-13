@@ -30,6 +30,7 @@ const load_module = async (): Promise<CryptoModule.Interface | undefined> => {
     try {
         const JS = await (async () => {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 return require('./crypto-module.js');
             } catch {
                 return null;

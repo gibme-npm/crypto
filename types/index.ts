@@ -52,7 +52,7 @@ export abstract class CryptoModule {
      *
      * @protected
      */
-    // eslint-disable-next-line no-useless-constructor
+
     protected constructor () {
     }
 

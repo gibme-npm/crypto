@@ -43,7 +43,7 @@ export default class Crypto extends CryptoModule {
      *
      * @protected
      */
-    // eslint-disable-next-line no-useless-constructor
+
     protected constructor () {
         super();
     }
