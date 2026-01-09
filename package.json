@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "20.0.1",
+  "version": "20.0.2",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
@@ -102,7 +102,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.1",
-    "@gibme/auto-pack": "^20.0.3",
+    "@gibme/auto-pack": "^20.0.4",
     "@types/bindings": "^1.5.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.1",
