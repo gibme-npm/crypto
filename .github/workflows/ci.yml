@@ -14,13 +14,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ['20', '22']
+        node: ['22']
     name: ${{ matrix.os }} - Node ${{ matrix.node }} Test
     env:
       MSBUILD_PATH: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin"
       CCACHE_DIR: $GITHUB_WORKSPACE/.ccache
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Checkout Submodules
         run: git submodule update --init --recursive
       - name: Install ccache (Linux)
@@ -85,11 +85,31 @@ jobs:
         run: yarn test:javascript
       - name: Execute WASM Unit Tests
         run: yarn test:wasm
+
+  publish:
+    needs: node_build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout Submodules
+        run: git submodule update --init --recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.1'  # Pin to avoid 22.22.2 npm self-upgrade bug (nodejs/node#62425)
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
+        run: yarn
+      - name: Build
+        run: yarn all:build
       - name: Publish to NPM
-        if: matrix.node == '20' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: npm publish --access public --provenance
 
   browser:
     needs: node_build
@@ -97,10 +117,10 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ '20', '22', '24' ]
+        node: [ '22', '24' ]
     name: ${{ matrix.os }} - Browser ${{ matrix.node }} Test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         name: Set up Node (NPM Cache)
         with:
@@ -128,12 +148,35 @@ jobs:
       - name: Build Webpack
         working-directory: ./browser
         run: yarn build:webpack
-      - name: Publish to NPM
-        if: matrix.node == '20' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+
+  browser_publish:
+    needs: browser
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.1'  # Pin to avoid 22.22.2 npm self-upgrade bug (nodejs/node#62425)
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
+      - name: Install Yarn
+        run: npm install -g yarn
+      - name: Install Dependencies
         working-directory: ./browser
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: yarn
+      - name: Build Typescript
+        working-directory: ./browser
+        run: yarn build:typescript
+      - name: Build Webpack
+        working-directory: ./browser
+        run: yarn build:webpack
+      - name: Publish to NPM
+        working-directory: ./browser
+        run: npm publish --access public --provenance
 
   prebuilds:
     needs: node_build
@@ -141,10 +184,10 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ '20' ]
+        node: [ '22' ]
     name: ${{ matrix.os }} - Prebuild ${{ matrix.node }} Node Binaries
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Checkout Submodules
         run: git submodule update --init --recursive
       - name: Install ccache (Linux)
@@ -196,10 +239,10 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        node: [ '20' ]
+        node: [ '22' ]
     name: Build Documentation
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Checkout Submodules
         run: git submodule update --init --recursive
       - uses: actions/setup-node@v4

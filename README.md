@@ -1,29 +1,38 @@
 # Standalone Cryptography Library
 
-This repository a standalone cryptographic primitive wrapper library that can be included in various other projects in a variety of development environments, including:
+A standalone cryptographic primitive wrapper library that can be included in various projects across a variety of development environments, including:
 
-* Node.js >= 18.x
+* Node.js >= 22.x (native C++ addon)
 * WASM
-* Javascript asm.js
+* Javascript (asm.js)
 
-It wraps [https://github.com/gibme-c/crypto](https://github.com/gibme-c/crypto) and exposes much of the functionality of that package to the supported development environments.
+It wraps [gibme-c/crypto](https://github.com/gibme-c/crypto) and exposes much of the functionality of that package to the supported development environments.
 
-**Note**: Due to the size of the resulting WASM/javascript module(s), only English mnemonic words are compiled by default.
+**Note**: Due to the size of the resulting WASM/Javascript module(s), only English mnemonic words are compiled by default.
 
-**Note**: If you are looking to use this package in a browser, please read the browser directions below for a lighter installation path/method and a minimal package size.
+**Note**: If you are looking to use this package in a browser, please read the [browser directions](#browser-usage--installation) below for a lighter installation path and minimal package size.
 
-## Javascript Library
+## Features
 
-**Note:** We build prebuilds of the Node.js native addon module as well as the WASM/JS binaries that are included for distribution with the NPM installed version of this package to speed up your development efforts.
+* Hashing (Argon2d/i/id, SHA-256, Keccak, Blake2b, and more)
+* Key derivation and HD keys (BIP32/BIP44/SLIP-0010)
+* Mnemonic seed generation and restoration
+* Digital signatures (Ed25519, ring signatures, CLSAG, Triptych)
+* Range proofs (Bulletproofs, Bulletproofs+)
+* RingCT (Pedersen commitments, pseudo commitments, amount masking)
+* Multisig support
+* Automatic module selection: native C++ addon > WASM > asm.js fallback
 
-If the prebuild for your system does not exist, it will compile the Node.js native addon module using CMake automatically.
+## Node.js Library
+
+Prebuilds of the Node.js native addon module and WASM/JS binaries are included with the npm-distributed package. If a prebuild for your platform does not exist, the native addon will be compiled automatically via CMake.
 
 ### Dependencies
 
-* [Node.js](https://nodejs.org) >= +16.x LTS (or Node v16)
-* Compiler supporting C++17 (gcc/clang/etc)
+* [Node.js](https://nodejs.org) >= 22.x
+* Compiler supporting C++17 (gcc/clang/MSVC)
 
-### Node.js Installation
+### Installation
 
 #### Yarn
 ```bash
@@ -35,29 +44,53 @@ yarn add @gibme/crypto
 npm install @gibme/crypto
 ```
 
-#### Initialization
+### Initialization
 
-##### TypeScript
+#### TypeScript
 
-```javascript
+```typescript
 import Crypto from '@gibme/crypto';
 
-(async() => {
-    const crypto = await Crypto.init();
-})
+const crypto = await Crypto.init();
 ```
 
-##### CommonJS
+#### CommonJS
 
 ```javascript
-const Crypto = require('@gibme/crypto').default
+const Crypto = require('@gibme/crypto').default;
 
-(async() => {
-    const crypto = await Crypto.init();
-})
+const crypto = await Crypto.init();
 ```
 
-### Browser Usage / Installation
+### Forcing a Specific Module
+
+By default, the library selects the best available module (native > WASM > JS). You can override this:
+
+```typescript
+import Crypto from '@gibme/crypto';
+
+const crypto = await Crypto.init();
+
+// Force WASM module
+await Crypto.force_wasm_library();
+
+// Force JS (asm.js) module
+await Crypto.force_js_library();
+```
+
+### Subpath Exports
+
+The package provides subpath exports for directly importing specific module loaders:
+
+```typescript
+import Crypto from '@gibme/crypto/wasm'; // WASM loader
+import Crypto from '@gibme/crypto/asm';  // asm.js loader
+import Crypto from '@gibme/crypto/node'; // Native addon loader
+```
+
+## Browser Usage / Installation
+
+For browser environments, use the dedicated browser package which provides a lighter installation without the native C++ addon.
 
 #### Yarn
 
@@ -71,31 +104,27 @@ yarn add @gibme/crypto-browser
 npm install @gibme/crypto-browser
 ```
 
-#### Initialization
+### Initialization
 
-##### TypeScript
+#### TypeScript
 
-```javascript
+```typescript
 import Crypto from '@gibme/crypto-browser';
 
-(async() => {
-    const crypto = await Crypto.init();
-})
+const crypto = await Crypto.init();
 ```
 
-##### CommonJS
+#### CommonJS
 
 ```javascript
-const Crypto = require('@gibme/crypto-browser').default
+const Crypto = require('@gibme/crypto-browser').default;
 
-(async() => {
-    const crypto = await Crypto.init();
-})
+const crypto = await Crypto.init();
 ```
 
-#### Documentation
+## Documentation
 
-You can find the full TypeScript/JS documentation for this library [here](https://gibme-npm.github.io/crypto/).
+Full TypeScript/JS API documentation is available at [gibme-npm.github.io/crypto](https://gibme-npm.github.io/crypto/).
 
 ## License
 
