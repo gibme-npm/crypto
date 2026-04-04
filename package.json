@@ -1,6 +1,6 @@
 {
   "name": "@gibme/crypto",
-  "version": "22.0.0",
+  "version": "22.0.1",
   "description": "Advanced Cryptographic Functions",
   "license": "BSD-3-Clause",
   "main": "dist/src/index.js",
